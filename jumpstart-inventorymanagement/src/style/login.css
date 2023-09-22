@@ -1,0 +1,51 @@
+.login-form-container {
+    width: 100%;
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    padding: 20px;
+    background-color: #F1F8F1;
+
+}
+
+.login-form-container img {
+    margin-bottom: 10px;
+    width: 90px;
+    height: auto;
+}
+
+.login-form {
+
+    background-color: white;
+    width: 40%;
+    padding: 40px 30px;
+    border-radius: 20px;
+}
+
+
+.login-form input {
+    background-color: #F1F8F1;
+    padding: 10px 10px;
+}
+
+.login-form a {
+    color: #33BFBF;
+    text-decoration: none;
+}
+
+
+
+
+@media only screen and (max-width: 800px) {
+
+    .login-form {
+        background-color: white;
+        width: 80%;
+    }
+
+}
