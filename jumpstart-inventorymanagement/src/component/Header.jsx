@@ -52,12 +52,17 @@ const Header = () => {
                   <NavDropdown title="Product" data-bs-theme="light">
                     <NavDropdown.Item>
                       <Link to="/all-products" className="text-decoration-none text-secondary">
-                        Products
+                        All Products
                       </Link>
                     </NavDropdown.Item>
                     <NavDropdown.Item>
                       <Link to="/all-categories" className="text-decoration-none  text-secondary">
-                        Category
+                        All Category
+                      </Link>
+                    </NavDropdown.Item>
+                    <NavDropdown.Item>
+                      <Link to="/stocks" className="text-decoration-none  text-secondary">
+                        Stocks
                       </Link>
                     </NavDropdown.Item>
                   </NavDropdown>

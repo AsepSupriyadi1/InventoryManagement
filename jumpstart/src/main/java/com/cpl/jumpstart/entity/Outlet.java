@@ -50,4 +50,8 @@ public class Outlet {
     @OneToMany(mappedBy = "outlet")
     private List<Customer> customerList;
 
+    @JsonIgnore
+    @OneToOne(mappedBy = "outlet")
+    private StockProduct stockProduct;
+
 }

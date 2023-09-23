@@ -1,5 +1,6 @@
 package com.cpl.jumpstart.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,6 +42,11 @@ public class Product {
     @Basic(fetch = FetchType.LAZY)
     @Column(name="product_pic", columnDefinition = "LONGBLOB", nullable = false)
     private byte[] productPic;
+
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "product")
+    private StockProduct stockProduct;
 
     // -=-=-=-=-=-=-=-=-= DEPENDECIES -=-=-=-=-=-=-=-=-=-=-=-=-=-=
     @ManyToOne
