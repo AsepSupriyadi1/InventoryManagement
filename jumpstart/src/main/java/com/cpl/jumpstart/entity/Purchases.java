@@ -34,6 +34,8 @@ public class Purchases {
     @Column(nullable = false)
     private Date dateTime;
 
+    private Date receiveDate;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PurchasesStatus purchasesStatus;

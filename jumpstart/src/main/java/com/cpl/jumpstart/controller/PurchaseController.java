@@ -44,7 +44,7 @@ public class PurchaseController {
 
         try {
             purchaseServices.addNewPurchase(purchaseDto);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Purchase added successfully !"));
+            return ResponseEntity.ok(new MessageResponse("Purchase added successfully !"));
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -61,6 +61,25 @@ public class PurchaseController {
                 }
 
             }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(messageResponse);
+
+        }
+
+    }
+
+
+    @PutMapping("/update/{purchaseId}")
+    public ResponseEntity<MessageResponse> receiveProduct(
+            @PathVariable(name = "purchaseId") Long purchaseId
+    ) {
+
+        try {
+            purchaseServices.receiveProduct(purchaseId);
+            return ResponseEntity.ok(new MessageResponse("Purchase added successfully !"));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessage("Failed to update purchase status !");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(messageResponse);
 
         }

@@ -82,6 +82,14 @@ public class StockProductService {
         stockProductRepo.save(stockProduct);
     }
 
+    public StockProduct findByOutletAndProduct(Outlet outlet, Product product){
+
+        return stockProductRepo.findByOutletAndProduct(outlet, product).orElseThrow(
+                () -> new RuntimeException("Stock Level Not Found !")
+        );
+    }
+
+
 
 
 

@@ -6,6 +6,7 @@ import com.cpl.jumpstart.entity.*;
 import com.cpl.jumpstart.entity.constraint.PurchasesStatus;
 import com.cpl.jumpstart.repositories.ProductPurchasesRepository;
 import com.cpl.jumpstart.repositories.PurchasesRepository;
+import com.cpl.jumpstart.repositories.StockProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +26,16 @@ public class PurchaseServices {
     public ProductPurchasesRepository productPurchasesRepo;
 
     @Autowired
+    public StockProductRepository stockProductRepo;
+
+    @Autowired
     public ProductServices productServices;
 
     @Autowired
     private OutletService outletService;
 
+    @Autowired
+    private StockProductService stockProductService;
     @Autowired
     private SupplierServices supplierServices;
 
@@ -119,6 +125,44 @@ public class PurchaseServices {
 
 
     }
+
+
+    public Purchases findPurchaseById(Long purchaseId){
+
+        return purchasesRepo.findById(purchaseId).orElseThrow(
+                () -> new RuntimeException(String.format("Purchase not found for id %s", purchaseId))
+        );
+
+    }
+
+
+    public void receiveProduct(Long purchaseId){
+        Purchases purchases = findPurchaseById(purchaseId);
+
+        if(purchases.getPurchasesStatus().equals(PurchasesStatus.COMPLETED)){
+            throw new RuntimeException("COMPLETED");
+        }
+
+        Outlet outlet = purchases.getOutlet();
+        System.out.println(outlet.getOutletName());
+
+
+        List<StockProduct> stockProductList = new ArrayList<>();
+        for(ProductPurchases productPurchases : purchases.getProductPurchasesList()){
+            Product product = productServices.findProductById(Long.parseLong(productPurchases.getProductId()));
+            StockProduct stockProduct = stockProductService.findByOutletAndProduct(purchases.getOutlet(), product);
+            stockProduct.setCurrentQuantity(productPurchases.getQuantity());
+            stockProductList.add(stockProduct);
+        }
+        stockProductRepo.saveAll(stockProductList);
+
+        purchases.setPurchasesStatus(PurchasesStatus.COMPLETED);
+        purchases.setReceiveDate(new Date());
+
+        purchasesRepo.save(purchases);
+
+    }
+
 
 
 }
