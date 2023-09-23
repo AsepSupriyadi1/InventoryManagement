@@ -1,15 +1,17 @@
 import { faCartArrowDown, faPlus, faSearch, faCartPlus } from "@fortawesome/free-solid-svg-icons";
 import Layout from "../../component/Layout";
 import DashHeading from "../../component/part/DashHeading";
-import { ContohProduct } from "../../assets/images/_images";
+import { ContohProduct, HeaderPic } from "../../assets/images/_images";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { getAllProduct } from "../../api/product";
+import { deleteProductAPI, getAllProductAPI } from "../../api/product";
 import { AuthContext } from "../../context/auth-context";
+import Swal from "sweetalert2";
 
 const AllProducts = () => {
   const { token } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [listProduct, setListProduct] = useState(null);
 
   const metaPageData = {
@@ -19,17 +21,43 @@ const AllProducts = () => {
     icon: faCartArrowDown,
   };
 
-  useEffect(() => {
-    getAllProduct(token)
+  const getAllProduct = () => {
+    getAllProductAPI(token)
       .then((response) => {
-        console.log(response.data);
         setListProduct(response.data);
       })
       .catch((err) => {
         alert("error occured");
         console.log(err);
       });
-  });
+  };
+
+  const handleDeleteProduct = (productId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteProductAPI(token, productId)
+          .then(() => {
+            getAllProduct();
+            Swal.fire("Sucess !", "Product has been deleted.", "success");
+          })
+          .catch(() => {
+            Swal.fire("Deleted!", "Failed to delete product", "error");
+          });
+      }
+    });
+  };
+
+  useEffect(() => {
+    getAllProduct();
+  }, []);
 
   return (
     <>
@@ -51,22 +79,38 @@ const AllProducts = () => {
           </Link>
         </div>
 
-        <div className="row g-3 my-3">
+        <div className="row g-3 my-3 min-scroll">
           {listProduct !== null && listProduct.length > 0 ? (
             <>
               {listProduct.map((value, index) => (
                 <>
-                  <div className="col-lg-4 col-md-6 col-12" key={value.productId}>
+                  <div className="col-lg-4 col-md-6 col-12" key={value.productId} style={{ cursor: "pointer" }}>
                     <div className="d-flex align-items-center border rounded">
                       <div className="p-3">
-                        {/* <img src={ContohProduct.cp1} className="product-img" alt="" /> */}
-                        <img src={`data:image/png;base64,${value.productPic}`} className="product-img" alt="product-img" />
+                        {value.productPic === "" ? (
+                          <>
+                            <img src={HeaderPic.defaultProduct} className="product-img" alt="" />
+                          </>
+                        ) : (
+                          <>
+                            <img src={`data:image/png;base64,${value.productPic}`} className="product-img" alt="product-img" />
+                          </>
+                        )}
                       </div>
                       <div>
                         <h4>{value.productName}</h4>
-                        <small>Category: {value.category !== null ? value.category.categoryName : "uncategorized"}</small>
+                        <small>Category: {value.category !== null ? value.category.name : "uncategorized"}</small>
                         <small>Price : $ {value.prices}</small>
-                        <small>Quantity on hand : - </small>
+
+                        <div>
+                          <Link to={`/detail-product/${value.productId}`} className="text-dark">
+                            Details
+                          </Link>
+                          <span className="px-1 text-secondary">|</span>
+                          <Link className="text-danger" onClick={() => handleDeleteProduct(value.productId)}>
+                            Delete
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>

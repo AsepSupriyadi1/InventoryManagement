@@ -3,7 +3,7 @@ import { BASE_URL } from "./constant";
 import { errorAlert, successConfAlert } from "../alert/sweetAlert";
 
 // GET ALL OUTLETS
-export const getAllProduct = async (token) => {
+export const getAllProductAPI = async (token) => {
   return await axios.get(`${BASE_URL}/product`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -18,7 +18,7 @@ export const addNewProduct = async (token, data) => {
 };
 
 //  Detail Product
-export const detailProduct = async (token, productId) => {
+export const detailProductAPI = async (token, productId) => {
   return await axios.get(`${BASE_URL}/product/detail/` + productId, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -32,7 +32,7 @@ export const updateProduct = async (token, data, productId) => {
 };
 
 //  Detail Product
-export const deleteProduct = async (token, productId) => {
+export const deleteProductAPI = async (token, productId) => {
   return await axios.delete(`${BASE_URL}/product/delete/` + productId, {
     headers: { Authorization: `Bearer ${token}` },
   });

@@ -6,8 +6,10 @@ import { Column } from "primereact/column";
 import { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllSupplierAPI } from "../../api/supplier";
+import { deleteSupplierAPI, getAllSupplierAPI } from "../../api/supplier";
 import { AuthContext } from "../../context/auth-context";
+import { returnConfirm } from "../../alert/sweetAlert";
+import Swal from "sweetalert2";
 
 const AllSupplier = () => {
   const { token } = useContext(AuthContext);
@@ -21,7 +23,7 @@ const AllSupplier = () => {
     icon: faTruck,
   };
 
-  useEffect(() => {
+  const getAllSupplier = () => {
     getAllSupplierAPI(token)
       .then((response) => {
         setListSupplier(response.data);
@@ -30,6 +32,33 @@ const AllSupplier = () => {
         alert("error occured");
         console.log(err);
       });
+  };
+
+  const deleteSupplier = (supplierId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteSupplierAPI(token, supplierId)
+          .then(() => {
+            getAllSupplier();
+            Swal.fire("Deleted!", "Supplier has been deleted.", "success");
+          })
+          .catch(() => {
+            Swal.fire("Deleted!", "Failed to delete supplier", "error");
+          });
+      }
+    });
+  };
+
+  useEffect(() => {
+    getAllSupplier();
   }, []);
 
   const actionsSupplierBody = (supplierId) => {
@@ -40,10 +69,10 @@ const AllSupplier = () => {
             <FontAwesomeIcon icon={faPencil} /> Details
           </Link>
 
-          {/* <span className="px-2 text-dark">|</span>
-          <a className="btn btn-danger">
+          <span className="px-2 text-dark">|</span>
+          <button className="btn btn-danger" onClick={() => deleteSupplier(supplierId)}>
             <FontAwesomeIcon icon={faTrash} /> Delete
-          </a> */}
+          </button>
         </div>
       </>
     );

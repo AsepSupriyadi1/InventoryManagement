@@ -72,6 +72,22 @@ public class SupplierController {
 
     }
 
+    @DeleteMapping("/delete/{supplierId}")
+    public ResponseEntity<MessageResponse> deleteSupplier(
+            @PathVariable(name = "supplierId") Long supplierId
+    ){
+
+        try {
+            supplierRepo.deleteById(supplierId);
+        } catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Delete supplier failed for id " + supplierId));
+        }
+        return ResponseEntity.ok(new MessageResponse("Delete supplier Success for id" + supplierId));
+
+
+    }
+
 
 
 }

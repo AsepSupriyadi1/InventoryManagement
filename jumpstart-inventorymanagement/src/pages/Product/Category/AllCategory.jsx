@@ -12,6 +12,7 @@ import DashHeading from "../../../component/part/DashHeading";
 import { AuthContext } from "../../../context/auth-context";
 import { Button, Modal } from "react-bootstrap";
 import { errorAlert, errorReturnConfAlert, successConfAlert, successReturnConfAlert } from "../../../alert/sweetAlert";
+import Swal from "sweetalert2";
 
 const AllCategory = () => {
   const { token } = useContext(AuthContext);
@@ -84,15 +85,26 @@ const AllCategory = () => {
   };
 
   const handleDeleteCategory = (categoryId) => {
-    deleteCategoryAPI(token, categoryId)
-      .then(() => {
-        findAllCategory(token);
-        successReturnConfAlert("Success", "Deleted successfully !");
-      })
-      .catch((err) => {
-        alert(err);
-        console.log(err);
-      });
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteCategoryAPI(token, categoryId)
+          .then(() => {
+            findAllCategory();
+            Swal.fire("Sucess !", "Category has been deleted.", "success");
+          })
+          .catch(() => {
+            Swal.fire("Deleted!", "Failed to delete category", "error");
+          });
+      }
+    });
   };
 
   const findAllCategory = () => {

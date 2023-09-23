@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
@@ -85,7 +86,13 @@ public class ProductController {
     @PutMapping("/update/{productId}")
     public ResponseEntity<MessageResponse> updateProduct(
             @PathVariable(name = "productId") Long productId,
-            AddProductRequest request
+            @RequestParam(name = "productName") String productName,
+            @RequestParam(name = "prices") Double prices,
+            @RequestParam(name = "costs") Double costs,
+            @RequestParam(name = "categoryId") String categoryId,
+            @RequestParam(name = "supplierId") String supplierId,
+            @RequestParam(name = "productDesc") String productDesc,
+            @RequestParam(name = "picture") MultipartFile picture
     ){
         try {
 
@@ -93,19 +100,19 @@ public class ProductController {
 
 
             // CATEGORY RELATION
-            if(request.getCategoryId() == null){
+            if(categoryId.equals("null")){
                 product.setCategory(null);
             } else {
-                ProductCategory category = productServices.findCategoryById(Long.parseLong(request.getCategoryId()));
+                ProductCategory category = productServices.findCategoryById(Long.parseLong(categoryId));
                 product.setCategory(category);
             }
 
 
             // SUPPLIER RELATION
-            if(request.getSupplierId() == null){
+            if(supplierId.equals("null")){
                 product.setSupplier(null);
             } else {
-                Supplier supplier = supplierRepository.findById(Long.parseLong(request.getSupplierId())).orElseThrow(
+                Supplier supplier = supplierRepository.findById(Long.parseLong(supplierId)).orElseThrow(
                         () -> new RuntimeException("Supplier Not Found")
                 );
                 product.setSupplier(supplier);
@@ -114,11 +121,15 @@ public class ProductController {
 
 
             // PRODUCT DETAILS
-            product.setProductName(request.getProductName());
-            product.setProductDesc(request.getProductDesc());
-            product.setPrices(request.getPrices());
-            product.setCosts(request.getCosts());
-            product.setProductPic(request.getPicture().getBytes());
+            product.setProductName(productName);
+            product.setProductDesc(productDesc);
+            product.setPrices(prices);
+            product.setCosts(costs);
+            product.setProductDesc(productDesc);
+
+            if(picture.getSize() != 0){
+                product.setProductPic(picture.getBytes());
+            }
 
             productServices.updateProduct(product);
 

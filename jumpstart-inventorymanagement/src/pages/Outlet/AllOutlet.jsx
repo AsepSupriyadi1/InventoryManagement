@@ -115,7 +115,7 @@ const AllOutlet = () => {
               </>
             )}
           ></Column>
-          <Column field="userApp.fullName" header="Staff Name"></Column>
+          <Column header="Staff Name" body={(rowData) => (rowData.userApp === null ? <span>{rowData.userApp.fullName}</span> : <span>No Staff</span>)}></Column>
           <Column field="outletActive" header="Is Active ?" body={(rowData) => (rowData.outletActive ? <Badge bg="success">Active</Badge> : <Badge bg="danger">Inactive</Badge>)}></Column>
           <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.outletId)}></Column>
         </DataTable>

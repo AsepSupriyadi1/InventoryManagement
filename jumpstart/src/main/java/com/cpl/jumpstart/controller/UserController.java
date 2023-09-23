@@ -5,6 +5,7 @@ import com.cpl.jumpstart.Exception.EmailAlreadyExistException;
 import com.cpl.jumpstart.dto.request.RegistrationRequest;
 import com.cpl.jumpstart.dto.response.CurrentUser;
 import com.cpl.jumpstart.dto.response.MessageResponse;
+import com.cpl.jumpstart.entity.Supplier;
 import com.cpl.jumpstart.entity.UserApp;
 import com.cpl.jumpstart.entity.constraint.EnumCountry;
 import com.cpl.jumpstart.entity.constraint.UserAppRole;
@@ -83,7 +84,6 @@ public class UserController {
     public ResponseEntity<MessageResponse> updateStaff(
             @RequestParam(name = "fullName") String fullName,
             @RequestParam(name = "email") String email,
-            @RequestParam(name = "active") Boolean active,
             @PathVariable(name = "staffId") Long staffId
     ){
 
@@ -114,6 +114,18 @@ public class UserController {
         return ResponseEntity.ok(new MessageResponse("Staff successfully deleted"));
     }
 
+
+    @GetMapping("/detail/{staffId}")
+    public ResponseEntity<?> staffDetail(@PathVariable(name = "staffId") Long staffId){
+
+        try {
+            UserApp staffDetails = userAppService.findById(staffId);
+            return ResponseEntity.ok(staffDetails);
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Not Found"));
+        }
+
+    }
 
 
 }

@@ -29,3 +29,10 @@ export const updateSupplier = async (token, data, supplierId) => {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+// ADD NEW SUPPLIER
+export const deleteSupplierAPI = async (token, supplierId) => {
+  return await axios.delete(`${BASE_URL}/supplier/delete/` + supplierId, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};

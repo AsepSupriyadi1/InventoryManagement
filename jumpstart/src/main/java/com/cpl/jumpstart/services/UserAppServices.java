@@ -115,16 +115,10 @@ public class UserAppServices implements UserDetailsService {
     public void deleteStaff(Long staffId){
 
         UserApp userApp = findById(staffId);
-        Outlet outlet = outletRepo.findByUserApp(userApp).orElseThrow(() -> new RuntimeException(
-                String.format("Outlet with userId %s not found !", userApp.getUserId())
-        ));
 
         if(userApp.getUserRole().equals(UserAppRole.SUPER_ADMIN)){
             throw new RuntimeException("Admin cannot be deleted !");
         }
-
-        outlet.setUserApp(null);
-        outletRepo.save(outlet);
 
         userAppRepository.deleteById(staffId);
     }

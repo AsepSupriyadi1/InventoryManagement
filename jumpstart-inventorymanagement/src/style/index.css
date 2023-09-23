@@ -266,3 +266,23 @@ textarea {
 .parentContainer {
     opacity: 0.5;
 }
+
+.min-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* width */
+.min-scroll::-webkit-scrollbar {
+    width: 2px !important;
+}
+
+/* Track */
+.min-scroll::-webkit-scrollbar-track {
+    background: #e4e4e4 !important;
+}
+
+/* Handle */
+.min-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+}

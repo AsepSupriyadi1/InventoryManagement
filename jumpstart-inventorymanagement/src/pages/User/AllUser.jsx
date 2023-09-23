@@ -8,8 +8,10 @@ import { useContext, useEffect, useState } from "react";
 import { HeaderPic } from "../../assets/images/_images";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { getAllUsersAPI } from "../../api/user";
+import { deleteStaffAdminAPI, getAllUsersAPI, getStaffDetailsAPI, updateUserAdminAPI } from "../../api/user";
 import { AuthContext } from "../../context/auth-context";
+import Swal from "sweetalert2";
+import { successReturnConfAlert } from "../../alert/sweetAlert";
 
 const AllUser = () => {
   const [canvasShow, setCanvasShow] = useState(false);
@@ -17,6 +19,12 @@ const AllUser = () => {
   const [modalShow, setModalShow] = useState(false);
   const handleCloseModal = () => setModalShow(false);
   const [users, setUsers] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
+
+  const [formValue, setformValue] = useState({
+    email: "",
+    fullName: "",
+  });
 
   const { token } = useContext(AuthContext);
 
@@ -27,11 +35,84 @@ const AllUser = () => {
     icon: faUserGroup,
   };
 
-  const actionsSupplierBody = () => {
+  const handleChange = (event) => {
+    setformValue({
+      ...formValue,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const getAllUser = () => {
+    getAllUsersAPI(token).then((response) => {
+      setUsers(response.data);
+    });
+  };
+
+  const handleDeleteUser = (staffId) => {
+    setCanvasShow(false);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteStaffAdminAPI(token, staffId)
+          .then(() => {
+            getAllUser();
+            Swal.fire("Success!", "Staff has been deleted.", "success");
+          })
+          .catch(() => {
+            Swal.fire("Deleted!", "Failed to delete staff", "error");
+          });
+      }
+    });
+  };
+
+  const handleUserDetails = (staffId) => {
+    getStaffDetailsAPI(token, staffId)
+      .then((response) => {
+        let data = response.data;
+        setUserDetails(data);
+        setformValue({
+          email: data.email,
+          fullName: data.fullName,
+        });
+
+        setCanvasShow(true);
+      })
+      .catch((err) => {
+        alert("Error Occured");
+        console.log(err);
+      });
+  };
+
+  const handleUpdateStaff = (event, staffId) => {
+    event.preventDefault();
+    let formData = new FormData();
+    formData.append("fullName", formValue.fullName);
+    formData.append("email", formValue.email);
+    updateUserAdminAPI(token, formData, staffId)
+      .then(() => {
+        setModalShow(false);
+        successReturnConfAlert("Success", "User updated successfully");
+        getAllUser(token);
+      })
+      .catch((err) => {
+        setModalShow(false);
+        alert("Error occured");
+        console.log(err);
+      });
+  };
+
+  const actionsSupplierBody = (staffId) => {
     return (
       <>
         <div className="text-center">
-          <a className="btn btn-primary" onClick={() => setCanvasShow(true)}>
+          <a className="btn btn-primary" onClick={() => handleUserDetails(staffId)}>
             <FontAwesomeIcon icon={faPencil} /> Details
           </a>
         </div>
@@ -40,9 +121,7 @@ const AllUser = () => {
   };
 
   useEffect(() => {
-    getAllUsersAPI(token).then((response) => {
-      setUsers(response.data);
-    });
+    getAllUser();
   }, []);
 
   return (
@@ -76,107 +155,105 @@ const AllUser = () => {
             )}
           ></Column>
           <Column field="userRole" header="Role"></Column>
-          <Column header="actions" body={actionsSupplierBody}></Column>
+          <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.userId)}></Column>
         </DataTable>
 
-        <Offcanvas show={canvasShow} onHide={handleCloseCanvas} placement="end">
-          <Offcanvas.Header closeButton>
-            <Offcanvas.Title>User Details</Offcanvas.Title>
-          </Offcanvas.Header>
-          <Offcanvas.Body style={{ width: "5000px !important" }}>
-            <div className="row d-flex align-items-center">
-              <img className="col-md-4" src={HeaderPic.defaultPicture} alt="picture" style={{ width: "130px", height: "102px", objectFit: "cover", borderRadius: "50%" }} />
+        {/* -=-=-=-=-=-=-=-= USER DETAILS -=-=-=-=-=-=-=-=-=-=  */}
+        {userDetails !== null && (
+          <>
+            <Offcanvas show={canvasShow} onHide={handleCloseCanvas} placement="end">
+              <Offcanvas.Header closeButton>
+                <Offcanvas.Title>User Details</Offcanvas.Title>
+              </Offcanvas.Header>
+              <Offcanvas.Body style={{ width: "5000px !important" }}>
+                <div className="row d-flex align-items-center">
+                  <img className="col-md-4" src={HeaderPic.defaultPicture} alt="picture" style={{ width: "130px", height: "102px", objectFit: "cover", borderRadius: "50%" }} />
 
-              <div className="col-md">
-                <h4>Asep Supriyadi</h4>
-                <h3 className="my-1">asepsupyad789@gmail.com</h3>
-                <p>Administrators</p>
-              </div>
-            </div>
+                  <div className="col-md">
+                    <h4>{userDetails.fullName}</h4>
+                    <h3 className="my-1">{userDetails.email}</h3>
+                    <p>{userDetails.userRole}</p>
+                  </div>
+                </div>
 
-            <div>
-              <h3 className="my-4">Actions</h3>
+                <div>
+                  <h3 className="my-4">Actions</h3>
 
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setModalShow(true);
-                  setCanvasShow(false);
-                }}
-              >
-                <FontAwesomeIcon icon={faPencil} /> Edit Users
-              </button>
-              <span className="p-2">|</span>
-              <button className="btn btn-danger">
-                <FontAwesomeIcon icon={faTrash} />
-                Delete Users
-              </button>
-            </div>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setModalShow(true);
+                      setCanvasShow(false);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPencil} /> Edit Users
+                  </button>
+                  <span className="p-2">|</span>
+                  <button className="btn btn-danger" onClick={() => handleDeleteUser(userDetails.userId)}>
+                    <FontAwesomeIcon icon={faTrash} />
+                    Delete Users
+                  </button>
+                </div>
 
-            <h3 className="my-4">Recent Activities</h3>
+                <h3 className="my-4">Recent Activities</h3>
 
-            <div class="table__responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col">datetime</th>
-                    <th scope="col">Activities</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td>Markdsfasasdf</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td>Markdsfasasdf</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </Offcanvas.Body>
-        </Offcanvas>
+                <div class="table__responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">datetime</th>
+                        <th scope="col">Activities</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">1</th>
+                        <td>Markdsfasasdf</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">1</th>
+                        <td>Markdsfasasdf</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </Offcanvas.Body>
+            </Offcanvas>
+
+            <Modal show={modalShow} onHide={handleCloseModal}>
+              <Modal.Header closeButton>
+                <Modal.Title>Edit Users</Modal.Title>
+              </Modal.Header>
+              <form onSubmit={(event) => handleUpdateStaff(event, userDetails.userId)}>
+                <Modal.Body>
+                  <h3 className="my-3">General Informations</h3>
+
+                  <div class="mb-3">
+                    <label for="fullName" class="form-label">
+                      Full Name
+                    </label>
+                    <input type="text" class="form-control" name="fullName" id="fullName" aria-describedby="emailHelp" value={formValue.fullName} onChange={handleChange} />
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="email" class="form-label">
+                      Email
+                    </label>
+                    <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" value={formValue.email} onChange={handleChange} />
+                  </div>
+                </Modal.Body>
+                <Modal.Footer>
+                  <button type="submit" class="btn btn-primary w-100">
+                    Update User
+                  </button>
+                </Modal.Footer>
+              </form>
+            </Modal>
+          </>
+        )}
+
+        {/* -=-=-=-=-=-=-=-= END OF USER DETAILS -=-=-=-=-=-=-=-=-=-=  */}
       </Layout>
-
-      <Modal show={modalShow} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Users</Modal.Title>
-        </Modal.Header>
-        <form>
-          <Modal.Body>
-            <h3 className="my-3">General Informations</h3>
-
-            <div class="mb-3">
-              <label for="exampleInputEmail1" class="form-label">
-                Full Name
-              </label>
-              <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
-            </div>
-
-            <div class="mb-3">
-              <label for="exampleInputEmail1" class="form-label">
-                Email
-              </label>
-              <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
-            </div>
-
-            <div class="mb-3">
-              <label for="exampleInputEmail1" class="form-label">
-                Role
-              </label>
-              <select name="" id="" className="form-control">
-                <option value="">-- choose category -- </option>
-              </select>
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <button type="submit" class="btn btn-primary w-100" onClick={handleCloseModal}>
-              Update User
-            </button>
-          </Modal.Footer>
-        </form>
-      </Modal>
     </>
   );
 };

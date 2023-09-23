@@ -47,3 +47,21 @@ export const successReloadAlert = (title, msg, url) => {
     window.location.href = url;
   });
 };
+
+export const returnConfirm = async (actions, postActions) => {
+  return Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      actions();
+      Swal.fire("Deleted!", "Your file has been deleted.", "success");
+      postActions();
+    }
+  });
+};
