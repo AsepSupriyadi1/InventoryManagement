@@ -65,6 +65,10 @@ public class ProductServices {
         productRepository.deleteById(productId);
     }
 
+    public List<Product> findAllProductWithStockLevel(){
+        return productRepository.findAllProductWithStockLevel();
+    }
+
     // -=-=-=-=-=-=-=-=-=-=--=-=-=-= END OF PRODUCT SERVICES --=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 
