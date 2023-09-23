@@ -4,14 +4,32 @@ import DashHeading from "../../component/part/DashHeading";
 import { ContohProduct } from "../../assets/images/_images";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { getAllProduct } from "../../api/product";
+import { AuthContext } from "../../context/auth-context";
 
 const AllProducts = () => {
+  const { token } = useContext(AuthContext);
+  const [listProduct, setListProduct] = useState(null);
+
   const metaPageData = {
     title: "Add Product",
     href: "all-products",
     header: ["all-products", ""],
     icon: faCartArrowDown,
   };
+
+  useEffect(() => {
+    getAllProduct(token)
+      .then((response) => {
+        console.log(response.data);
+        setListProduct(response.data);
+      })
+      .catch((err) => {
+        alert("error occured");
+        console.log(err);
+      });
+  });
 
   return (
     <>
@@ -34,33 +52,32 @@ const AllProducts = () => {
         </div>
 
         <div className="row g-3 my-3">
-          <div className="col-lg-4 col-md-6 col-12">
-            <div className="d-flex align-items-center border rounded">
-              <div className="p-3">
-                <img src={ContohProduct.cp1} className="product-img" alt="" />
-              </div>
-              <div>
-                <h4>Battery</h4>
-                <small>Category: Electronics</small>
-                <small>Price : $ 10</small>
-                <small>Quantity on hand : 10.00</small>
-              </div>
+          {listProduct !== null && listProduct.length > 0 ? (
+            <>
+              {listProduct.map((value, index) => (
+                <>
+                  <div className="col-lg-4 col-md-6 col-12" key={value.productId}>
+                    <div className="d-flex align-items-center border rounded">
+                      <div className="p-3">
+                        {/* <img src={ContohProduct.cp1} className="product-img" alt="" /> */}
+                        <img src={`data:image/png;base64,${value.productPic}`} className="product-img" alt="product-img" />
+                      </div>
+                      <div>
+                        <h4>{value.productName}</h4>
+                        <small>Category: {value.category !== null ? value.category.categoryName : "uncategorized"}</small>
+                        <small>Price : $ {value.prices}</small>
+                        <small>Quantity on hand : - </small>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ))}
+            </>
+          ) : (
+            <div className="col-12">
+              <h3>There is no product</h3>
             </div>
-          </div>
-
-          <div className="col-lg-4 col-md-6 col-12">
-            <div className="d-flex align-items-center border rounded">
-              <div className="p-3">
-                <img src={ContohProduct.cp2} className="product-img" alt="" />
-              </div>
-              <div>
-                <h4>Glue</h4>
-                <small>Category: Tools</small>
-                <small>Price : $ 10</small>
-                <small>Quantity on hand : 10.00</small>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </Layout>
     </>

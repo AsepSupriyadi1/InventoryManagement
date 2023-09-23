@@ -1,6 +1,7 @@
 package com.cpl.jumpstart.entity;
 
 
+import com.cpl.jumpstart.entity.constraint.EnumCountry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,9 +30,9 @@ public class Outlet {
     @Column(nullable = false)
     private String phoneNumber;
 
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String country;
+    private EnumCountry country;
 
     @Column(nullable = false)
     private String outletAddress;
@@ -39,7 +40,7 @@ public class Outlet {
     private boolean isOutletActive;
 
     @OneToOne
-    @JoinColumn(name = "user_id", unique = true)
+    @JoinColumn(name = "user_id", unique = true, nullable = true)
     private UserApp userApp;
 
     @JsonIgnore

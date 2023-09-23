@@ -2,7 +2,9 @@ package com.cpl.jumpstart.services;
 
 
 import com.cpl.jumpstart.entity.Supplier;
+import com.cpl.jumpstart.entity.constraint.EnumCountry;
 import com.cpl.jumpstart.repositories.SupplierRepository;
+import com.cpl.jumpstart.utils.CountryConfig;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,8 @@ public class SupplierServices {
         } else {
             supplierCode += 1;
         }
-
-        supplier.setSupplierCode("S-JP-" + supplierCode);
+        String countryCode = CountryConfig.getCountryCode(EnumCountry.valueOf(supplier.getCountry()));
+        supplier.setSupplierCode("SUPPLIER-JP-" + countryCode + "-" + supplierCode);
         supplierRepository.save(supplier);
     }
 

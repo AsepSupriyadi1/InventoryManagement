@@ -6,6 +6,7 @@ import com.cpl.jumpstart.dto.request.RegistrationRequest;
 import com.cpl.jumpstart.dto.response.CurrentUser;
 import com.cpl.jumpstart.dto.response.MessageResponse;
 import com.cpl.jumpstart.entity.UserApp;
+import com.cpl.jumpstart.entity.constraint.EnumCountry;
 import com.cpl.jumpstart.entity.constraint.UserAppRole;
 import com.cpl.jumpstart.repositories.UserAppRepository;
 import com.cpl.jumpstart.services.UserAppServices;
@@ -36,7 +37,7 @@ public class UserController {
             userApp.setEmail(registrationRequest.getEmail());
             userApp.setPassword(registrationRequest.getPassword());
             userApp.setFullName(registrationRequest.getFullName());
-            userApp.setUserRole(UserAppRole.valueOf(registrationRequest.getRole()));
+            userApp.setCountry(EnumCountry.valueOf(registrationRequest.getCountry()));
             userAppService.save(userApp);
 
         } catch (RuntimeException e){
@@ -77,6 +78,42 @@ public class UserController {
         List<UserApp> listUser = userAppRepository.findStaffWithoutOutlet();
         return ResponseEntity.ok(listUser);
     }
+
+    @PutMapping("/update/{staffId}")
+    public ResponseEntity<MessageResponse> updateStaff(
+            @RequestParam(name = "fullName") String fullName,
+            @RequestParam(name = "email") String email,
+            @RequestParam(name = "active") Boolean active,
+            @PathVariable(name = "staffId") Long staffId
+    ){
+
+        try {
+            UserApp userApp = userAppService.findById(staffId);
+            userApp.setFullName(fullName);
+            userApp.setEmail(email);
+
+            userAppService.updateUser(userApp);
+        } catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(new MessageResponse(e.getMessage()));
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Staff updated successfully"));
+    }
+
+
+    @DeleteMapping("/delete/{staffId}")
+    public ResponseEntity<MessageResponse> deleteStaff(@PathVariable(name = "staffId") Long staffId){
+        try {
+            userAppService.deleteStaff(staffId);
+
+        } catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(new MessageResponse(e.getMessage()));
+        }
+        return ResponseEntity.ok(new MessageResponse("Staff successfully deleted"));
+    }
+
 
 
 }

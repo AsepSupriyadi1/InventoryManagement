@@ -122,15 +122,13 @@ const DetailOutlet = () => {
                       <label for="country" class="form-label">
                         Country
                       </label>
-                      <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange}>
+                      <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange} disabled>
                         <option value="">-- choose country -- </option>
-                        <option value="Indonesia">Indonesia</option>
-                        <option value="Singapore">Singapore</option>
-                        <option value="Malaysia">Malaysia</option>
-                        <option value="Philippines">Philippines</option>
-                        <option value="Thailand">Thailand</option>
-                        <option value="Vietnam">Vietnam</option>
-                        <option value="India">India</option>
+                        <option value="indonesia">Indonesia</option>
+                        <option value="singapore">Singapore</option>
+                        <option value="malaysia">Malaysia</option>
+                        <option value="philippines">Philippines</option>
+                        <option value="thailand">Thailand</option>
                       </select>
                     </div>
 

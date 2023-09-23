@@ -2,7 +2,9 @@ package com.cpl.jumpstart.controller;
 
 
 import com.cpl.jumpstart.Exception.EmailAlreadyExistException;
+import com.cpl.jumpstart.Exception.OutletNotActiveException;
 import com.cpl.jumpstart.Exception.RoleNotFoundException;
+import com.cpl.jumpstart.Exception.UserNotActiveException;
 import com.cpl.jumpstart.dto.request.RegistrationRequest;
 import com.cpl.jumpstart.dto.response.CurrentUser;
 import com.cpl.jumpstart.dto.response.MessageResponse;
@@ -37,10 +39,8 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private TokenService tokensService;
-
     @Autowired
     private TokenRepository tokensRepository;
-
 
     @Autowired
     private JwtService jwtService;
@@ -76,6 +76,14 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             authenticationResponse.setErrorType("NOT_FOUND");
             authenticationResponse.setErrorMessage("Invalid username or password !");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(authenticationResponse);
+        } catch (UserNotActiveException e){
+            authenticationResponse.setErrorType("NOT_ACTIVE");
+            authenticationResponse.setErrorMessage("Outlet is inactive");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(authenticationResponse);
+        } catch (OutletNotActiveException e){
+            authenticationResponse.setErrorType("NOT_ACTIVE");
+            authenticationResponse.setErrorMessage("You don't have an access to any outlet");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(authenticationResponse);
         }
 

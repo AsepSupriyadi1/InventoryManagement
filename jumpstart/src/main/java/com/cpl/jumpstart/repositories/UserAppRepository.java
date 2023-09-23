@@ -11,6 +11,10 @@ import java.util.Optional;
 @Repository
 public interface UserAppRepository extends JpaRepository<UserApp, Long> {
 
+
+    @Query(value = "SELECT MAX(u.userId) FROM UserApp u")
+    Long findMaxId();
+
     Optional<UserApp> findByEmail(String email);
 
 

@@ -9,7 +9,6 @@ import com.cpl.jumpstart.entity.Supplier;
 import com.cpl.jumpstart.repositories.ProductCategoryRepository;
 import com.cpl.jumpstart.repositories.SupplierRepository;
 import com.cpl.jumpstart.services.ProductServices;
-import jdk.jfr.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,33 +32,146 @@ public class ProductController {
     @Autowired
     private SupplierRepository supplierRepository;
 
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- PRODUCT CONTROLLER -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     @PostMapping
     public ResponseEntity<MessageResponse> addNewProduct(AddProductRequest request) throws IOException {
 
         Product product = new Product();
-        product.setPrices(Double.parseDouble(request.getPrices()));
-        product.setCosts(Double.parseDouble(request.getCosts()));
-        product.setVolume(Double.parseDouble(request.getVolume()));
-        product.setWeight(Double.parseDouble(request.getWeight()));
+        product.setPrices(request.getPrices());
+        product.setCosts(request.getCosts());
         product.setProductName(request.getProductName());
         product.setDatetime(new Date());
-        product.setProductPic(request.getPicture().getBytes());
+        product.setProductDesc(request.getProductDesc());
+
+        if(request.getPicture() != null){
+            product.setProductPic(request.getPicture().getBytes());
+        }
 
         try {
-            productServices.addProduct(product, Long.parseLong(request.getSupplierId()), Long.parseLong(request.getCategoryId()));
-        } catch (RuntimeException e){
+
+            productServices.addProduct(product, request.getSupplierId(), request.getCategoryId());
+
+        } catch (Exception e){
+
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Add Product failed for " + request.getProductName()));
+
         }
 
         return ResponseEntity.ok(new MessageResponse("Add Product Success for " + request.getProductName()));
 
     }
 
+    @GetMapping
+    public ResponseEntity<List<Product>> getAllProducts(){
+        return ResponseEntity.ok(productServices.getAllProducts());
+    }
+
+    @GetMapping("/detail/{productId}")
+    public ResponseEntity<Product> getDetailProduct(
+            @PathVariable(name = "productId") Long productId
+    ){
+        try {
+            Product product = productServices.findProductById(productId);
+            return ResponseEntity.ok(product);
+
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
+    }
+
+    @PutMapping("/update/{productId}")
+    public ResponseEntity<MessageResponse> updateProduct(
+            @PathVariable(name = "productId") Long productId,
+            AddProductRequest request
+    ){
+        try {
+
+            Product product = productServices.findProductById(productId);
+
+
+            // CATEGORY RELATION
+            if(request.getCategoryId() == null){
+                product.setCategory(null);
+            } else {
+                ProductCategory category = productServices.findCategoryById(Long.parseLong(request.getCategoryId()));
+                product.setCategory(category);
+            }
+
+
+            // SUPPLIER RELATION
+            if(request.getSupplierId() == null){
+                product.setSupplier(null);
+            } else {
+                Supplier supplier = supplierRepository.findById(Long.parseLong(request.getSupplierId())).orElseThrow(
+                        () -> new RuntimeException("Supplier Not Found")
+                );
+                product.setSupplier(supplier);
+            }
+
+
+
+            // PRODUCT DETAILS
+            product.setProductName(request.getProductName());
+            product.setProductDesc(request.getProductDesc());
+            product.setPrices(request.getPrices());
+            product.setCosts(request.getCosts());
+            product.setProductPic(request.getPicture().getBytes());
+
+            productServices.updateProduct(product);
+
+            return ResponseEntity.ok(new MessageResponse("Product updated successfully !"));
+
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+    @DeleteMapping("/delete/{productId}")
+    public ResponseEntity<MessageResponse> deleteProduct(
+            @PathVariable(name = "productId") Long productId
+    ){
+
+        try {
+            productServices.deleteById(productId);
+        } catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Delete product failed for id " + productId));
+        }
+        return ResponseEntity.ok(new MessageResponse("Delete product Success for id" + productId));
+
+
+    }
+
+
+
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END OF PRODUCT CONTROLLER -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+
+
+
+
+
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- CATEGORY CONTROLLER -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+
+    @GetMapping("/all-category")
+    public ResponseEntity<List<ProductCategory>> getAllProductsCategory(){
+        return ResponseEntity.ok(productServices.getAllProductsCategory());
+    }
+
     @PostMapping("/category")
-    public ResponseEntity<MessageResponse> addNewProduct(
-            @RequestParam(required = true, name = "categoryName") String categoryName
-            ) {
+    public ResponseEntity<MessageResponse> addNewCategory(
+            @RequestParam(name = "categoryName") String categoryName
+    ) {
 
         ProductCategory category = new ProductCategory();
         category.setName(categoryName);
@@ -68,52 +180,63 @@ public class ProductController {
             categoryRepository.save(category);
         } catch (RuntimeException e){
             System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Add Product failed for " + categoryName));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Add Category failed for " + categoryName));
         }
 
-        return ResponseEntity.ok(new MessageResponse("Add Product Success for " + categoryName));
+        return ResponseEntity.ok(new MessageResponse("Add Category Success for " + categoryName));
 
     }
 
-    @PostMapping("/supplier")
-    public ResponseEntity<MessageResponse> addNewSupplier(
-            @RequestParam(name = "supplierName") String supplierName,
-            @RequestParam(name = "companyName") String companyName,
-            @RequestParam(name = "email") String email,
-            @RequestParam(name = "phoneNumber") String phoneNumber
+
+
+    @PutMapping("/category/update/{categoryId}")
+    public ResponseEntity<MessageResponse> updateCategory(
+            @RequestParam(name = "categoryName") String categoryName,
+            @PathVariable(name = "categoryId") Long categoryId
     ) {
 
-        Supplier supplier = new Supplier();
-        supplier.setSupplierName(supplierName);
-        supplier.setCompanyName(companyName);
-        supplier.setEmail(email);
-        supplier.setPhoneNumber(phoneNumber);
-
         try {
-            supplierRepository.save(supplier);
+            ProductCategory category = productServices.findCategoryById(categoryId);
+            category.setName(categoryName);
+            categoryRepository.save(category);
+
         } catch (RuntimeException e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Add Product failed for " + supplierName));
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Update Category failed for " + categoryName));
         }
 
-        return ResponseEntity.ok(new MessageResponse("Add Product Success for " + supplierName));
+        return ResponseEntity.ok(new MessageResponse("Update Category Success for " + categoryName));
+
+    }
+
+    @GetMapping("/category/detail/{categoryId}")
+    public ResponseEntity<ProductCategory> getCategoryById(@PathVariable(name = "categoryId") Long categoryId){
+        try {
+            ProductCategory productCategory = productServices.findCategoryById(categoryId);
+            return ResponseEntity.ok(productCategory);
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
 
     }
 
 
-    @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts(){
-        return ResponseEntity.ok(productServices.getAllProducts());
+    @DeleteMapping("/category/delete/{categoryId}")
+    public ResponseEntity<MessageResponse> deleteCategory(
+            @PathVariable(name = "categoryId") Long categoryId
+    ) {
+        try {
+            categoryRepository.deleteById(categoryId);
+            return ResponseEntity.ok(new MessageResponse("Delete Category Success for id" + categoryId));
+        } catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Delete Category failed for id " + categoryId));
+        }
+
     }
 
-    @GetMapping("/all-category")
-    public ResponseEntity<List<ProductCategory>> getAllProductsCategory(){
-        return ResponseEntity.ok(productServices.getAllProductsCategory());
-    }
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END OF CATEGORY CONTROLLER -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-    @GetMapping("/all-supplier")
-    public ResponseEntity<List<Supplier>> getAllSupplier(){
-        return ResponseEntity.ok(productServices.getAllSupplier());
-    }
 
 
 }

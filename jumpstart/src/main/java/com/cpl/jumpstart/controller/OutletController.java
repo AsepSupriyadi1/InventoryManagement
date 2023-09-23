@@ -4,6 +4,7 @@ import com.cpl.jumpstart.dto.request.OutletDto;
 import com.cpl.jumpstart.dto.response.MessageResponse;
 import com.cpl.jumpstart.entity.Outlet;
 import com.cpl.jumpstart.entity.Supplier;
+import com.cpl.jumpstart.entity.constraint.EnumCountry;
 import com.cpl.jumpstart.repositories.OutletRepository;
 import com.cpl.jumpstart.repositories.SupplierRepository;
 import com.cpl.jumpstart.services.OutletService;
@@ -41,12 +42,13 @@ public class OutletController {
             @RequestBody OutletDto requestOutlet
     ){
 
+        Outlet outlet = new Outlet();
+        outlet.setOutletName(requestOutlet.getOutletName());
+        outlet.setPhoneNumber(requestOutlet.getPhoneNumber());
+        outlet.setOutletAddress(requestOutlet.getOutletAddress());
+        outlet.setCountry(EnumCountry.valueOf(requestOutlet.getCountry()));
+
         try {
-            Outlet outlet = new Outlet();
-            outlet.setOutletName(requestOutlet.getOutletName());
-            outlet.setPhoneNumber(requestOutlet.getPhoneNumber());
-            outlet.setOutletAddress(requestOutlet.getOutletAddress());
-            outlet.setCountry(requestOutlet.getCountry());
             outletService.addNewOutlet(outlet, Long.parseLong(requestOutlet.getUserId()));
             return ResponseEntity.ok(new MessageResponse("Outlet added successfully !"));
         } catch (Exception e){

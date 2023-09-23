@@ -67,6 +67,14 @@ const AllUser = () => {
         <DataTable value={users} tableStyle={{ minWidth: "50rem" }}>
           <Column field="fullName" header="Full Name"></Column>
           <Column field="email" header="Email"></Column>
+          <Column
+            header="Country"
+            body={(rowData) => (
+              <>
+                <span className="text-capitalize">{rowData.country}</span>
+              </>
+            )}
+          ></Column>
           <Column field="userRole" header="Role"></Column>
           <Column header="actions" body={actionsSupplierBody}></Column>
         </DataTable>

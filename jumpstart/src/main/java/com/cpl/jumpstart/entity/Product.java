@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 
 import java.util.Date;
@@ -19,28 +21,36 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
+
+    @Column(nullable = false)
     private String productName;
 
+    @Column(nullable = false)
     private Double prices;
+
+    @Column(nullable = false)
     private Double Costs;
 
-    private Double weight;
-    private Double volume;
+    @Column(nullable = false)
+    private String productDesc;
 
+    @Column(nullable = false)
     private Date datetime;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
-    @Column(name="product_pic", columnDefinition="BLOB NOT NULL")
+    @Column(name="product_pic", columnDefinition = "LONGBLOB", nullable = false)
     private byte[] productPic;
 
     // -=-=-=-=-=-=-=-=-= DEPENDECIES -=-=-=-=-=-=-=-=-=-=-=-=-=-=
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private ProductCategory category;
 
     @ManyToOne
     @JoinColumn(name = "supplier_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Supplier supplier;
 
 }

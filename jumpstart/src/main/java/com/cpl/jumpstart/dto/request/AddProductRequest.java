@@ -18,15 +18,11 @@ public class AddProductRequest {
 
     private String productName;
 
-    private String prices;
-    private String costs;
-
-    private String weight;
-    private String volume;
-
+    private Double prices;
+    private Double costs;
     private String categoryId;
     private String supplierId;
-
+    private String productDesc;
     private MultipartFile picture;
 
 }

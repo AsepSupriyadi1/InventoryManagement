@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ProductServices {
@@ -27,22 +28,48 @@ public class ProductServices {
     private SupplierRepository supplierRepository;
 
 
-    public void addProduct(Product product, Long supplierId, Long categoryId) {
+    // -=-=-=-=-=-=-=-=-=-=--=-=-=-= PRODUCT  SERVICES --=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-        ProductCategory category = categoryRepository.findById(categoryId).orElseThrow(
-                () -> new RuntimeException("Category not found " + categoryId)
-        );
-        product.setCategory(category);
+    public void addProduct(Product product, String supplierId, String categoryId) {
 
-        Supplier supplier = supplierRepository.findById(supplierId).orElseThrow(
-                () -> new RuntimeException("Supplier not found " + supplierId)
-        );
-        product.setSupplier(supplier);
+        if(!supplierId.equals("null")) {
+            ProductCategory category = categoryRepository.findById(Long.parseLong(categoryId)).orElseThrow(
+                    () -> new RuntimeException("Category not found " + categoryId)
+            );
+            product.setCategory(category);
+        }
+
+        if(!categoryId.equals("null")) {
+            Supplier supplier = supplierRepository.findById(Long.parseLong(supplierId)).orElseThrow(
+                    () -> new RuntimeException("Supplier not found " + supplierId)
+            );
+            product.setSupplier(supplier);
+        }
 
 
         productRepository.save(product);
 
     }
+
+    public Product findProductById(Long productId){
+        return productRepository.findById(productId).orElseThrow(
+                () -> new RuntimeException(String.format("Product with id %s not found", productId))
+        );
+    }
+
+    public void updateProduct(Product updatedProduct){
+       productRepository.save(updatedProduct);
+    }
+
+    public void deleteById(Long productId){
+        productRepository.deleteById(productId);
+    }
+
+    // -=-=-=-=-=-=-=-=-=-=--=-=-=-= END OF PRODUCT SERVICES --=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+
+    // -=-=-=-=-=-=-=-=-=-=--=-=-=-= CATEGORY SERVICES --=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 
     public List<Product> getAllProducts(){
@@ -53,10 +80,16 @@ public class ProductServices {
         return categoryRepository.findAll();
     }
 
-    public List<Supplier> getAllSupplier(){
-        return supplierRepository.findAll();
+
+
+
+    public ProductCategory findCategoryById(Long categoryId){
+        return categoryRepository.findById(categoryId).orElseThrow(
+                () -> new RuntimeException(String.format("Category with id %s not found", categoryId))
+        );
     }
 
+    // -=-=-=-=-=-=-=-=-=-=--=-=-=-= END OF CATEGORY SERVICES --=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 
 }

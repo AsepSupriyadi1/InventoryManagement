@@ -16,6 +16,7 @@ import ErrorPage from "./pages/ErrorPage";
 import AllOutlet from "./pages/Outlet/AllOutlet";
 import AddOutlet from "./pages/Outlet/AddOutlet";
 import DetailOutlet from "./pages/Outlet/DetailsOutlet";
+import AllCategory from "./pages/Product/Category/AllCategory";
 function App() {
   const { isLoggedIn, currentUser } = useContext(AuthContext);
 
@@ -49,6 +50,8 @@ function App() {
             <Route path="/all-products" element={<AllProducts />} />
             <Route path="/add-products" element={<AddProduct />} />
             <Route path="/detail-product/:productId" element={<DetailsProduct />} />
+
+            <Route path="/all-categories" element={<AllCategory />} />
 
             {/* SUPPLIER ROUTES */}
             <Route path="/all-suppliers" element={<AllSupplier />} />

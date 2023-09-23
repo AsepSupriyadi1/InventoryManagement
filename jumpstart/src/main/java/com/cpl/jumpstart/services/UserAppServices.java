@@ -1,12 +1,16 @@
 package com.cpl.jumpstart.services;
 
 import com.cpl.jumpstart.Exception.EmailAlreadyExistException;
+import com.cpl.jumpstart.Exception.OutletNotActiveException;
+import com.cpl.jumpstart.Exception.UserNotActiveException;
 import com.cpl.jumpstart.entity.Outlet;
 import com.cpl.jumpstart.entity.Token;
 import com.cpl.jumpstart.entity.UserApp;
 import com.cpl.jumpstart.entity.constraint.UserAppRole;
+import com.cpl.jumpstart.repositories.OutletRepository;
 import com.cpl.jumpstart.repositories.TokenRepository;
 import com.cpl.jumpstart.repositories.UserAppRepository;
+import com.cpl.jumpstart.utils.CountryConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +37,8 @@ public class UserAppServices implements UserDetailsService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-
+    @Autowired
+    private OutletRepository outletRepo;
 
 
 
@@ -41,6 +46,19 @@ public class UserAppServices implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UserApp userApp = userAppRepository.findByEmail(email)
                 .orElseThrow( () -> new UsernameNotFoundException(String.format("User with email %s not found", email)));
+
+
+        boolean isStoreAdmin = userApp.getUserRole().equals(UserAppRole.STORE_ADMIN);
+
+        if( isStoreAdmin && userApp.getOutlet() == null){
+            throw new OutletNotActiveException();
+        }
+
+        if(isStoreAdmin && !userApp.getOutlet().isOutletActive()){
+            throw new UserNotActiveException(email);
+        }
+
+
         return new User(userApp.getUsername(), userApp.getPassword(), userApp.getAuthorities());
     }
 
@@ -59,9 +77,20 @@ public class UserAppServices implements UserDetailsService {
             throw new EmailAlreadyExistException(user.getEmail());
         }
 
+        Long staffCode = userAppRepository.findMaxId();
+        if(staffCode == null) {
+            staffCode = 1L;
+        } else {
+            staffCode += 1;
+        }
+        String countryCode = CountryConfig.getCountryCode(user.getCountry());
+
+        user.setStaffCode("STAFF-JP-" + countryCode + "-" + staffCode);
+
         // HASH PASSWORD
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+        user.setUserRole(UserAppRole.STORE_ADMIN);
 
         return userAppRepository.save(user);
     }
@@ -78,6 +107,32 @@ public class UserAppServices implements UserDetailsService {
                 new RuntimeException(String.format("User with id '%s' not found", userAppID))
         );
     }
+
+    public void deleteById(Long userAppID){
+        userAppRepository.deleteById(userAppID);
+    }
+
+    public void deleteStaff(Long staffId){
+
+        UserApp userApp = findById(staffId);
+        Outlet outlet = outletRepo.findByUserApp(userApp).orElseThrow(() -> new RuntimeException(
+                String.format("Outlet with userId %s not found !", userApp.getUserId())
+        ));
+
+        if(userApp.getUserRole().equals(UserAppRole.SUPER_ADMIN)){
+            throw new RuntimeException("Admin cannot be deleted !");
+        }
+
+        outlet.setUserApp(null);
+        outletRepo.save(outlet);
+
+        userAppRepository.deleteById(staffId);
+    }
+
+    public void updateUser(UserApp user) {
+        userAppRepository.save(user);
+    }
+
 
 
 

@@ -1,6 +1,7 @@
 package com.cpl.jumpstart.entity;
 
 
+import com.cpl.jumpstart.entity.constraint.EnumCountry;
 import com.cpl.jumpstart.entity.constraint.UserAppRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -34,16 +35,18 @@ public class UserApp implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "is_active")
-    private boolean isActive;
-
     // -=--=-=-=- USER DETAILS -=-=-=-=-=-==
     @Column(nullable = false)
     private String fullName;
 
+    @Column(nullable = false, unique = true)
+    private String staffCode;
 
     private String phoneNumber;
     private String address;
+
+    @Enumerated(EnumType.STRING)
+    private EnumCountry country;
 
 
     // -=--=-=-=- DEPENDENCY -=-=-=-=-=-==

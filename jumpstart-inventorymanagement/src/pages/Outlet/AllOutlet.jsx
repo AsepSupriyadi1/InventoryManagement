@@ -107,7 +107,14 @@ const AllOutlet = () => {
         <DataTable value={listOutlets} dataKey="outletId" globalFilter={globalFilter} tableStyle={{ minWidth: "50rem" }}>
           <Column field="outletName" header="Outlet Name"></Column>
           <Column field="outletCode" header="Outlet Code"></Column>
-          <Column field="country" header="Country"></Column>
+          <Column
+            header="Country"
+            body={(rowData) => (
+              <>
+                <span className="text-capitalize">{rowData.country}</span>
+              </>
+            )}
+          ></Column>
           <Column field="userApp.fullName" header="Staff Name"></Column>
           <Column field="outletActive" header="Is Active ?" body={(rowData) => (rowData.outletActive ? <Badge bg="success">Active</Badge> : <Badge bg="danger">Inactive</Badge>)}></Column>
           <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.outletId)}></Column>

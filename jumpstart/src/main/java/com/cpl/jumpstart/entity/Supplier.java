@@ -27,7 +27,6 @@ public class Supplier {
     @Column(nullable = false)
     private String supplierName;
 
-
     @Column(nullable = false)
     private String country;
 

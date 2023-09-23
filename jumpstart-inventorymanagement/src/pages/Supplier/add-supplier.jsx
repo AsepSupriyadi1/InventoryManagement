@@ -38,7 +38,7 @@ const AddSupplier = () => {
     addNewSupplierAPI(token, formValue)
       .then((response) => {
         successReturnConfAlert("Success", "Successfully add new supplier !").then(() => {
-          navigate("../all-supplier");
+          navigate("../all-suppliers");
         });
       })
       .catch((err) => {
@@ -79,13 +79,10 @@ const AddSupplier = () => {
                     </label>
                     <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange}>
                       <option value="">-- choose country -- </option>
-                      <option value="Indonesia">Indonesia</option>
-                      <option value="Singapore">Singapore</option>
-                      <option value="Malaysia">Malaysia</option>
-                      <option value="Philippines">Philippines</option>
-                      <option value="Thailand">Thailand</option>
-                      <option value="Vietnam">Vietnam</option>
-                      <option value="India">India</option>
+                      <option value="indonesia">Indonesia</option>
+                      <option value="singapore">Singapore</option>
+                      <option value="malaysia">Malaysia</option>
+                      <option value="philippines">Philippines</option>
                     </select>
                   </div>
 

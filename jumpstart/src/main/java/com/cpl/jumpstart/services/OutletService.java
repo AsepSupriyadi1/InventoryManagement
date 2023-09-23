@@ -4,25 +4,21 @@ import com.cpl.jumpstart.entity.Outlet;
 import com.cpl.jumpstart.entity.UserApp;
 import com.cpl.jumpstart.repositories.CustomerRepository;
 import com.cpl.jumpstart.repositories.OutletRepository;
+import com.cpl.jumpstart.utils.CountryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OutletService {
 
-
-    private final OutletRepository outletRepo;
-    private final CustomerRepository customerRepo;
-
-    private final UserAppServices userAppServices;
+    @Autowired
+    private OutletRepository outletRepo;
 
     @Autowired
-    public OutletService(OutletRepository outletRepo, CustomerRepository customerRepo, UserAppServices userAppServices) {
-        this.outletRepo = outletRepo;
-        this.customerRepo = customerRepo;
-        this.userAppServices = userAppServices;
-    }
+    private CustomerRepository customerRepo;
+    @Autowired
+    private UserAppServices userAppServices;
+
 
     public Long getLastSavedSupplierId() {
         return outletRepo.findMaxId();
@@ -38,7 +34,13 @@ public class OutletService {
         } else {
             outletCode += 1;
         }
-        outlet.setOutletCode("O-JP-" + outletCode);
+
+        if(!userApp.getCountry().equals(outlet.getCountry())){
+            throw new RuntimeException("Outlet at least should have the same country with user");
+        }
+
+        String countryCode = CountryConfig.getCountryCode(outlet.getCountry());
+        outlet.setOutletCode("OUTLET-JP-" + countryCode + "-" + outletCode);
         outlet.setUserApp(userApp);
         outletRepo.save(outlet);
     }
@@ -58,6 +60,15 @@ public class OutletService {
         outlet.setPhoneNumber(updatedOutlet.getPhoneNumber());
         outlet.setOutletAddress(updatedOutlet.getOutletAddress());
         outletRepo.save(outlet);
+    }
+
+
+    public Outlet findByUser(UserApp userApp){
+
+        return outletRepo.findByUserApp(userApp).orElseThrow(() -> new RuntimeException(
+                String.format("Outlet with userId %s not found !", userApp.getUserId())
+        ));
+
     }
 
 

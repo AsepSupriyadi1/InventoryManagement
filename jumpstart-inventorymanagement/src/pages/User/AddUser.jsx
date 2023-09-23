@@ -19,7 +19,7 @@ const AddUser = () => {
     email: "",
     password: "",
     fullName: "",
-    role: "",
+    country: "",
   });
 
   const handleChange = (event) => {
@@ -72,6 +72,20 @@ const AddUser = () => {
             </div>
 
             <div className="mb-3">
+              <label htmlFor="country" className="form-label">
+                Country : <span className="text-danger">*</span>
+              </label>
+              <select name="country" id="country" className="form-control" onChange={handleChange} value={formValue.country}>
+                <option value="">-- choose country -- </option>
+                <option value="indonesia">Indonesia</option>
+                <option value="singapore">Singapore</option>
+                <option value="malaysia">Malaysia</option>
+                <option value="philippines">Philippines</option>
+                <option value="thailand">Thailand</option>
+              </select>
+            </div>
+
+            <div className="mb-3">
               <label htmlFor="email" className="form-label">
                 Email : <span className="text-danger">*</span>
               </label>
@@ -83,17 +97,6 @@ const AddUser = () => {
                 Password : <span className="text-danger">*</span>
               </label>
               <input type="password" name="password" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" onChange={handleChange} value={formValue.password} required />
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="role" className="form-label">
-                Role : <span className="text-danger">*</span>
-              </label>
-              <select name="role" id="role" className="form-control" onChange={handleChange}>
-                <option value="">-- choose role -- </option>
-                <option value="SUPER_ADMIN">Super Admin</option>
-                <option value="STORE_ADMIN">Outlet Admin</option>
-              </select>
             </div>
 
             <button type="submit" className="btn btn-primary w-100">

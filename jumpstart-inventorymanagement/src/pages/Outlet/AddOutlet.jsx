@@ -42,7 +42,7 @@ const AddOutlet = () => {
     addNewOutletAPI(formValue, token)
       .then((response) => successReturnConfAlert("Success", "Outlet added succcessfully").then(() => navigate("../all-outlets")))
       .catch((err) => {
-        errorReturnConfAlert("Failed", "Failed to add a new outlet");
+        errorReturnConfAlert("Failed", "Outlet must have the same country !");
       });
   };
 
@@ -99,13 +99,11 @@ const AddOutlet = () => {
                     </label>
                     <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange}>
                       <option value="">-- choose country -- </option>
-                      <option value="Indonesia">Indonesia</option>
-                      <option value="Singapore">Singapore</option>
-                      <option value="Malaysia">Malaysia</option>
-                      <option value="Philippines">Philippines</option>
-                      <option value="Thailand">Thailand</option>
-                      <option value="Vietnam">Vietnam</option>
-                      <option value="India">India</option>
+                      <option value="indonesia">Indonesia</option>
+                      <option value="singapore">Singapore</option>
+                      <option value="malaysia">Malaysia</option>
+                      <option value="philippines">Philippines</option>
+                      <option value="thailand">Thailand</option>
                     </select>
                   </div>
                 </div>
@@ -126,7 +124,7 @@ const AddOutlet = () => {
                           {listAvailableStaff.map((value, index) => (
                             <>
                               <option key={value.userId} value={value.userId}>
-                                {value.fullName}
+                                {value.fullName} ~ {value.country}
                               </option>
                             </>
                           ))}

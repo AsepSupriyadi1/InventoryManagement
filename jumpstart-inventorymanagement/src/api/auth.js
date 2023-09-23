@@ -1,6 +1,6 @@
 import axios from "axios";
 import { BASE_URL } from "./constant";
-import { errorAlert, successConfAlert } from "../alert/sweetAlert";
+import { errorAlert, errorReturnConfAlert, successConfAlert } from "../alert/sweetAlert";
 
 // REGISTER
 export const registerAPI = async (data, token) => {
@@ -43,7 +43,7 @@ export const loginAPI = async (user, userCtx, navigate, setError, setModalShow) 
       let errorType = err.response.data.errorType;
       let errorMessage = err.response.data.errorMessage;
 
-      alert(errorMessage);
+      errorReturnConfAlert("Login Failed", errorMessage);
 
       // if (errorType === "NOT_FOUND") {
       //   setError({
