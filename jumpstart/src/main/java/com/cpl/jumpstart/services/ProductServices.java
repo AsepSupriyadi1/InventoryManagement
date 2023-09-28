@@ -69,6 +69,22 @@ public class ProductServices {
         return productRepository.findAllProductWithStockLevel();
     }
 
+
+    public List<Product> findALlBySupplier(Long supplierId){
+
+        try {
+//            Supplier supplier = supplierRepository.findById(supplierId).orElseThrow(
+//                    () -> new RuntimeException("Supplier Not Found !")
+//            );
+
+            return productRepository.findAllByProductBySupplier(supplierId);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException("Supplier Not Found");
+        }
+
+    }
+
     // -=-=-=-=-=-=-=-=-=-=--=-=-=-= END OF PRODUCT SERVICES --=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 

@@ -158,6 +158,21 @@ public class ProductController {
 
     }
 
+    @GetMapping("/supplier/{supplierId}")
+    public ResponseEntity<List<Product>> findAllProductBySupplier(
+            @PathVariable(name = "supplierId") Long supplierId
+    ){
+        try {
+            List<Product> productList = productServices.findALlBySupplier(supplierId);
+            return ResponseEntity.ok(productList);
+
+        } catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
+    }
+
 
 
 

@@ -120,6 +120,14 @@ public class PurchaseServices {
         purchases.setDateTime(new Date());
         purchases.setPurchasesStatus(PurchasesStatus.PENDING);
 
+        Long puchaseCode = getLastSavedPurchasesId();
+        if(puchaseCode == null) {
+            puchaseCode = 1L;
+        } else {
+            puchaseCode += 1;
+        }
+        purchases.setPurchaseCode("BILL-JP-" + puchaseCode);
+
         purchasesRepo.save(purchases);
         productPurchasesRepo.saveAll(purchasedProductList);
 
@@ -161,6 +169,10 @@ public class PurchaseServices {
 
         purchasesRepo.save(purchases);
 
+    }
+
+    public Long getLastSavedPurchasesId() {
+        return purchasesRepo.findMaxId();
     }
 
 

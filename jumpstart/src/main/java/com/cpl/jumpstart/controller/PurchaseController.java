@@ -7,6 +7,8 @@ import com.cpl.jumpstart.entity.Outlet;
 import com.cpl.jumpstart.entity.Product;
 import com.cpl.jumpstart.entity.Purchases;
 import com.cpl.jumpstart.entity.Supplier;
+import com.cpl.jumpstart.repositories.ProductRepository;
+import com.cpl.jumpstart.repositories.PurchasesRepository;
 import com.cpl.jumpstart.services.OutletService;
 import com.cpl.jumpstart.services.ProductServices;
 import com.cpl.jumpstart.services.PurchaseServices;
@@ -29,6 +31,9 @@ public class PurchaseController {
 
 
     @Autowired
+    private PurchasesRepository purchasesRepository;
+
+    @Autowired
     private PurchaseServices purchaseServices;
 
 
@@ -36,6 +41,27 @@ public class PurchaseController {
     public ResponseEntity<List<Product>> getAllStockLevelProduct() {
         List<Product> listLevelProduct = productServices.findAllProductWithStockLevel();
         return ResponseEntity.ok(listLevelProduct);
+    }
+
+
+    @GetMapping
+    public ResponseEntity<List<Purchases>> getAllPurchases(){
+        List<Purchases> purchasesList = purchasesRepository.findAll();
+        return ResponseEntity.ok(purchasesList);
+    }
+
+    @GetMapping("/detail/{purchaseId}")
+    public ResponseEntity<Purchases> detailPurchases(
+            @PathVariable(name = "purchaseId") Long purchaseId
+    ){
+        try {
+            Purchases purchases = purchaseServices.findPurchaseById(purchaseId);
+            return ResponseEntity.ok(purchases);
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
     }
 
 

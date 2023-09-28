@@ -27,9 +27,11 @@ public class Purchases {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long purchasesId;
 
-
     @Column(nullable = false)
     private Double totalAmount;
+
+    @Column(nullable = false)
+    private String purchaseCode;
 
     @Column(nullable = false)
     private Date dateTime;

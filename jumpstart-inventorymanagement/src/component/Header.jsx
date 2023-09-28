@@ -84,11 +84,23 @@ const Header = () => {
                   Customer
                 </Link>
               </Nav.Link>
-              <Nav.Link>
-                <Link to="/all-bill" className="link-light text-secondary">
-                  Bill
-                </Link>
-              </Nav.Link>
+              <NavDropdown title="Transactions" data-bs-theme="light">
+                <NavDropdown.Item>
+                  <Link to="/all-purchases" className="text-decoration-none text-secondary">
+                    All Purchases
+                  </Link>
+                </NavDropdown.Item>
+                <NavDropdown.Item>
+                  <Link to="/all-sales" className="text-decoration-none  text-secondary">
+                    All Sales
+                  </Link>
+                </NavDropdown.Item>
+                <NavDropdown.Item>
+                  <Link to="/all-stocks" className="text-decoration-none  text-secondary">
+                    Stocks
+                  </Link>
+                </NavDropdown.Item>
+              </NavDropdown>
             </Nav>
             <Dropdown data-bs-theme="light">
               <Dropdown.Toggle className="navbar__dropdown-btn fw-normal">

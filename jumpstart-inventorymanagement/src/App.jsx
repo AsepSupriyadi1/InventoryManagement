@@ -18,6 +18,8 @@ import AddOutlet from "./pages/Outlet/AddOutlet";
 import DetailOutlet from "./pages/Outlet/DetailsOutlet";
 import AllCategory from "./pages/Product/Category/AllCategory";
 import AllStok from "./pages/Product/Stock/AllStocks";
+import AllBills from "./pages/Bill/AllBills";
+import AddBills from "./pages/Bill/AddBills";
 function App() {
   const { isLoggedIn, currentUser } = useContext(AuthContext);
 
@@ -46,6 +48,10 @@ function App() {
 
                 {/* STOCKS ADMIN */}
                 <Route path="/all-stocks" element={<AllStok />} />
+
+                {/* PURCHASES ADMIN */}
+                <Route path="/all-purchases" element={<AllBills />} />
+                <Route path="/add-bills" element={<AddBills />} />
               </>
             )}
 

@@ -37,3 +37,10 @@ export const deleteProductAPI = async (token, productId) => {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+//  Find All Product By Supplier
+export const findAllBySupplierIdAPI = async (token, supplierId) => {
+  return await axios.get(`${BASE_URL}/product/supplier/` + supplierId, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
