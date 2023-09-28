@@ -61,7 +61,7 @@ const Header = () => {
                       </Link>
                     </NavDropdown.Item>
                     <NavDropdown.Item>
-                      <Link to="/stocks" className="text-decoration-none  text-secondary">
+                      <Link to="/all-stocks" className="text-decoration-none  text-secondary">
                         Stocks
                       </Link>
                     </NavDropdown.Item>

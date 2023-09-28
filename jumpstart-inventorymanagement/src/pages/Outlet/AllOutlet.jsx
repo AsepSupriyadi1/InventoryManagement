@@ -86,7 +86,7 @@ const AllOutlet = () => {
 
         <div className="d-flex justify-content-between my-4">
           <div className="d-flex">
-            <input type="text" className="form-control" placeholder="Search a product" value={filter} onChange={handleFilterChange} />
+            <input type="text" className="form-control" placeholder="Search an Outlet" value={filter} onChange={handleFilterChange} />
 
             {filter.length >= 1 && (
               <>
@@ -104,21 +104,15 @@ const AllOutlet = () => {
           </Link>
         </div>
 
-        <DataTable value={listOutlets} dataKey="outletId" globalFilter={globalFilter} tableStyle={{ minWidth: "50rem" }}>
-          <Column field="outletName" header="Outlet Name"></Column>
-          <Column field="outletCode" header="Outlet Code"></Column>
-          <Column
-            header="Country"
-            body={(rowData) => (
-              <>
-                <span className="text-capitalize">{rowData.country}</span>
-              </>
-            )}
-          ></Column>
-          <Column header="Staff Name" body={(rowData) => (rowData.userApp === null ? <span>{rowData.userApp.fullName}</span> : <span>No Staff</span>)}></Column>
-          <Column field="outletActive" header="Is Active ?" body={(rowData) => (rowData.outletActive ? <Badge bg="success">Active</Badge> : <Badge bg="danger">Inactive</Badge>)}></Column>
-          <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.outletId)}></Column>
-        </DataTable>
+        <div className="row min-scroll">
+          <DataTable value={listOutlets} dataKey="outletId" globalFilter={globalFilter} tableStyle={{ minWidth: "50rem" }}>
+            <Column field="outletName" header="Outlet Name"></Column>
+            <Column field="outletCode" header="Outlet Code"></Column>
+            <Column header="Staff Name" body={(rowData) => (rowData.userApp === null ? <span>No Staff</span> : <span>{rowData.userApp.fullName}</span>)}></Column>
+            <Column field="outletActive" header="Is Active ?" body={(rowData) => (rowData.outletActive ? <Badge bg="success">Active</Badge> : <Badge bg="danger">Inactive</Badge>)}></Column>
+            <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.outletId)}></Column>
+          </DataTable>
+        </div>
       </Layout>
     </>
   );

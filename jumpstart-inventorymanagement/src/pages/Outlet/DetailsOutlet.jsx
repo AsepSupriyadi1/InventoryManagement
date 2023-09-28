@@ -3,14 +3,16 @@ import Layout from "../../component/Layout";
 import DashHeading from "../../component/part/DashHeading";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/auth-context";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { successReturnConfAlert } from "../../alert/sweetAlert";
 import { getDetailOutletAPI, updateOutletAPI } from "../../api/outlet";
+import { getAllAvailableStaffsAPI } from "../../api/user";
 
 const DetailOutlet = () => {
   const { token } = useContext(AuthContext);
   const params = useParams();
   const navigate = useNavigate();
+  const [listAvailableStaff, setListAvailableStaff] = useState(null);
 
   // -=-=-=-=-=-=-=-=-= FORM STATE -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
   const [outletDetails, setOutletDetails] = useState(null);
@@ -18,8 +20,8 @@ const DetailOutlet = () => {
   const [formValue, setformValue] = useState({
     outletName: null,
     phoneNumber: null,
-    country: null,
     outletAddress: null,
+    userId: null,
   });
   // -=-=-=-=-=-=-=-=-= END OF FORM STATE -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -45,13 +47,18 @@ const DetailOutlet = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const data = {
-      outletName: formValue.outletName,
-      phoneNumber: formValue.phoneNumber,
-      country: formValue.country,
-      outletAddress: formValue.outletAddress,
-      outletActive: checked,
-    };
+    const data = new FormData();
+    data.append("outletName", formValue.outletName);
+    data.append("phoneNumber", formValue.phoneNumber);
+    data.append("outletAddress", formValue.outletAddress);
+    data.append("outletActive", checked);
+    data.append("staffId", formValue.userId);
+
+    console.log(data.get("outletName"));
+    console.log(data.get("phoneNumber"));
+    console.log(data.get("outletAddress"));
+    console.log(data.get("outletActive"));
+    console.log(data.get("staffId"));
 
     updateOutletAPI(token, data, params.outletId).then(() => {
       successReturnConfAlert("Update Success", "Outlet updated successfully !")
@@ -71,12 +78,17 @@ const DetailOutlet = () => {
         let data = response.data;
         setOutletDetails(response.data);
         console.log(data);
-        setformValue({
+
+        const detailsData = {
           outletName: data.outletName,
           phoneNumber: data.phoneNumber,
-          country: data.country,
           outletAddress: data.outletAddress,
-        });
+        };
+
+        if (data.userApp !== null) detailsData.userId = data.userApp.userId;
+
+        setformValue(detailsData);
+
         setChecked(data.outletActive);
       })
       .catch((err) => {
@@ -87,6 +99,15 @@ const DetailOutlet = () => {
 
   useEffect(() => {
     getDetailOutlet(params.outletId);
+
+    getAllAvailableStaffsAPI(token)
+      .then((response) => {
+        console.log(response.data);
+        setListAvailableStaff(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
   return (
@@ -118,19 +139,40 @@ const DetailOutlet = () => {
                       <input type="text" className="form-control  input__type1" name="phoneNumber" id="phoneNumber" required value={formValue.phoneNumber} onChange={handleChange} />
                     </div>
 
-                    <div className="mb-3">
-                      <label for="country" class="form-label">
-                        Country
-                      </label>
-                      <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange} disabled>
-                        <option value="">-- choose country -- </option>
-                        <option value="indonesia">Indonesia</option>
-                        <option value="singapore">Singapore</option>
-                        <option value="malaysia">Malaysia</option>
-                        <option value="philippines">Philippines</option>
-                        <option value="thailand">Thailand</option>
-                      </select>
-                    </div>
+                    {outletDetails.userApp === null && (
+                      <>
+                        <div class="mb-3">
+                          <label for="staff" class="form-label">
+                            Staff
+                          </label>
+
+                          {listAvailableStaff !== null && listAvailableStaff.length > 0 ? (
+                            <>
+                              <select name="userId" id="country" className="form-control" value={formValue.userId} onChange={handleChange}>
+                                <option value={null}>-- choose available staff -- </option>
+
+                                {listAvailableStaff.map((value, index) => (
+                                  <>
+                                    <option key={value.userId} value={value.userId}>
+                                      {value.fullName}
+                                    </option>
+                                  </>
+                                ))}
+                              </select>
+                            </>
+                          ) : (
+                            <>
+                              <small>
+                                No Staff available,
+                                <Link to="../all-users" className="ps-2">
+                                  All Staff
+                                </Link>
+                              </small>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    )}
 
                     <div class="mb-3">
                       <h3 className="my-3">Status</h3>

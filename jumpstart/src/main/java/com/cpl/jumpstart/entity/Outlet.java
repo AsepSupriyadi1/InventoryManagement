@@ -32,10 +32,6 @@ public class Outlet {
     @Column(nullable = false)
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EnumCountry country;
-
     @Column(nullable = false)
     private String outletAddress;
 

@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-JumpstartApplication<jumpstart>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.cpl.jumpstart.JumpstartApplication",
+      "projectName": "jumpstart",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

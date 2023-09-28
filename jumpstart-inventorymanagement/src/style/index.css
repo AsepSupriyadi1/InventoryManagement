@@ -257,6 +257,7 @@ textarea {
 .table__responsive {
     width: 100% !important;
     max-height: 300px;
+    min-height: 500px;
     overflow: auto;
 }
 
@@ -268,13 +269,13 @@ textarea {
 }
 
 .min-scroll {
-    max-height: 250px;
-    overflow-y: auto;
+    max-height: 300px;
+    overflow: auto;
 }
 
 /* width */
 .min-scroll::-webkit-scrollbar {
-    width: 2px !important;
+    width: 3px !important;
 }
 
 /* Track */

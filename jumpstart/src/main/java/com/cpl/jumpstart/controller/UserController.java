@@ -38,7 +38,6 @@ public class UserController {
             userApp.setEmail(registrationRequest.getEmail());
             userApp.setPassword(registrationRequest.getPassword());
             userApp.setFullName(registrationRequest.getFullName());
-            userApp.setCountry(EnumCountry.valueOf(registrationRequest.getCountry()));
             userAppService.save(userApp);
 
         } catch (RuntimeException e){
@@ -84,11 +83,15 @@ public class UserController {
     public ResponseEntity<MessageResponse> updateStaff(
             @RequestParam(name = "fullName") String fullName,
             @RequestParam(name = "email") String email,
+            @RequestParam(name = "phoneNumber") String phoneNumber,
+            @RequestParam(name = "address") String address,
             @PathVariable(name = "staffId") Long staffId
     ){
 
         try {
             UserApp userApp = userAppService.findById(staffId);
+            userApp.setPhoneNumber(phoneNumber);
+            userApp.setAddress(address);
             userApp.setFullName(fullName);
             userApp.setEmail(email);
 

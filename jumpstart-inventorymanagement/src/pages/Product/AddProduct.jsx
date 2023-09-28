@@ -93,8 +93,8 @@ const AddProduct = () => {
     // console.log(productName);
     // console.log(prices);
     // console.log(costs);
-    console.log(typeof categoryId);
-    console.log(typeof supplierId);
+    // console.log(typeof categoryId);
+    // console.log(typeof supplierId);
     // console.log(file);
     // console.log(productDesc);
 
@@ -105,6 +105,14 @@ const AddProduct = () => {
     formData.append("supplierId", supplierId);
     formData.append("picture", file);
     formData.append("productDesc", productDesc);
+
+    console.log(formData.get("productName"));
+    console.log(formData.get("prices"));
+    console.log(formData.get("costs"));
+    console.log(formData.get("categoryId"));
+    console.log(formData.get("supplierId"));
+    console.log(formData.get("picture"));
+    console.log(formData.get("productDesc"));
 
     addNewProduct(token, formData)
       .then(() => {

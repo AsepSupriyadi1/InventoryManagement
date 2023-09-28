@@ -83,9 +83,8 @@ public class UserAppServices implements UserDetailsService {
         } else {
             staffCode += 1;
         }
-        String countryCode = CountryConfig.getCountryCode(user.getCountry());
 
-        user.setStaffCode("STAFF-JP-" + countryCode + "-" + staffCode);
+        user.setStaffCode("STAFF-JP-" + staffCode);
 
         // HASH PASSWORD
         String encodedPassword = passwordEncoder.encode(user.getPassword());

@@ -14,7 +14,6 @@ public class OutletDto {
     private String outletName;
     private String outletCode;
     private String phoneNumber;
-    private String country;
     private String outletAddress;
     private String userId;
 }

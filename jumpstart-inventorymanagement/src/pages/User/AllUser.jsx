@@ -24,6 +24,8 @@ const AllUser = () => {
   const [formValue, setformValue] = useState({
     email: "",
     fullName: "",
+    phoneNumber: "",
+    address: "",
   });
 
   const { token } = useContext(AuthContext);
@@ -80,6 +82,8 @@ const AllUser = () => {
         setformValue({
           email: data.email,
           fullName: data.fullName,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
         });
 
         setCanvasShow(true);
@@ -95,6 +99,8 @@ const AllUser = () => {
     let formData = new FormData();
     formData.append("fullName", formValue.fullName);
     formData.append("email", formValue.email);
+    formData.append("phoneNumber", formValue.email);
+    formData.append("address", formValue.address);
     updateUserAdminAPI(token, formData, staffId)
       .then(() => {
         setModalShow(false);
@@ -143,20 +149,14 @@ const AllUser = () => {
           </Link>
         </div>
 
-        <DataTable value={users} tableStyle={{ minWidth: "50rem" }}>
-          <Column field="fullName" header="Full Name"></Column>
-          <Column field="email" header="Email"></Column>
-          <Column
-            header="Country"
-            body={(rowData) => (
-              <>
-                <span className="text-capitalize">{rowData.country}</span>
-              </>
-            )}
-          ></Column>
-          <Column field="userRole" header="Role"></Column>
-          <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.userId)}></Column>
-        </DataTable>
+        <div className="row min-scroll">
+          <DataTable value={users} tableStyle={{ maxWidth: "100%" }}>
+            <Column field="fullName" header="Full Name"></Column>
+            <Column field="email" header="Email"></Column>
+            <Column field="userRole" header="Role"></Column>
+            <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.userId)}></Column>
+          </DataTable>
+        </div>
 
         {/* -=-=-=-=-=-=-=-= USER DETAILS -=-=-=-=-=-=-=-=-=-=  */}
         {userDetails !== null && (
@@ -173,6 +173,13 @@ const AllUser = () => {
                     <h4>{userDetails.fullName}</h4>
                     <h3 className="my-1">{userDetails.email}</h3>
                     <p>{userDetails.userRole}</p>
+                  </div>
+
+                  <div className="col-md">
+                    <h3 className="my-4">Contacts</h3>
+                    <p>PhoneNumber : {userDetails.phoneNumber}</p>
+                    <p className="my-3">Address : </p>
+                    <textarea name="" id="" cols="30" rows="4" className="form-control" disabled value={userDetails.address}></textarea>
                   </div>
                 </div>
 
@@ -240,6 +247,20 @@ const AllUser = () => {
                       Email
                     </label>
                     <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" value={formValue.email} onChange={handleChange} />
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="phoneNumber" class="form-label">
+                      Phone Number
+                    </label>
+                    <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" aria-describedby="emailHelp" value={formValue.phoneNumber} onChange={handleChange} />
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="address" class="form-label">
+                      Address
+                    </label>
+                    <textarea name="address" id="address" cols="30" rows="4" className="form-control" value={formValue.address} onChange={handleChange}></textarea>
                   </div>
                 </Modal.Body>
                 <Modal.Footer>

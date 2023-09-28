@@ -20,13 +20,12 @@ const DetailsProduct = () => {
   const [listCategory, setListCategory] = useState(null);
   const [listSupplier, setListSupplier] = useState(null);
 
-  const [productName, setProductName] = useState(null);
-  const [prices, setPrices] = useState(null);
-  const [costs, setCosts] = useState(null);
+  const [productName, setProductName] = useState("");
+  const [prices, setPrices] = useState(0);
+  const [costs, setCosts] = useState(0);
   const [categoryId, setCategoryId] = useState(null);
   const [supplierId, setSupplierId] = useState(null);
-  const [productDesc, setProductDesc] = useState(null);
-
+  const [productDesc, setProductDesc] = useState("");
   const emptyBlob = new Blob([], { type: "application/octet-stream" });
   const [file, setFile] = useState(emptyBlob);
   const [productPic, setProductPic] = useState(null);
@@ -49,11 +48,10 @@ const DetailsProduct = () => {
         setProductName(data.productName);
         setPrices(data.prices);
         setCosts(data.costs);
-        setCategoryId(data.category.categoryId);
-        setSupplierId(data.supplier.supplierId);
+        data.category !== null ? setCategoryId(data.category.categoryId) : null;
+        data.supplier !== null ? setSupplierId(data.supplier.supplierId) : null;
         setProductDesc(data.productDesc);
         setProductPic(data.productPic);
-        setFile(data.productPic);
       })
       .catch((err) => {
         console.log(err);
@@ -131,6 +129,14 @@ const DetailsProduct = () => {
     formData.append("picture", file);
     formData.append("productDesc", productDesc);
 
+    console.log(formData.get("productName"));
+    console.log(formData.get("prices"));
+    console.log(formData.get("costs"));
+    console.log(formData.get("categoryId"));
+    console.log(formData.get("supplierId"));
+    console.log(formData.get("picture"));
+    console.log(formData.get("productDesc"));
+
     updateProduct(token, formData, params.productId)
       .then(() => {
         successReturnConfAlert("Success", "Product Updated Successfully").then(() => {
@@ -157,7 +163,7 @@ const DetailsProduct = () => {
                   <div className="col-md-9">
                     <div className="mb-3">
                       <label htmlFor="productName">Product Name : </label>
-                      <input type="text" className="form-control fs-3 input__type1" value={productName} onChange={(e) => setProductName(e.target.value)} />
+                      <input type="text" className="form-control fs-3 input__type1" value={productName} onChange={(e) => setProductName(e.target.value)} required />
                     </div>
 
                     <div className="mb-3">
@@ -165,7 +171,7 @@ const DetailsProduct = () => {
                       {listCategory !== null && listCategory.length > 0 ? (
                         <>
                           <select name="categoryId" id="categoryId" className="form-control input__type1" value={categoryId} onChange={handleCategoryChange}>
-                            <option>-- choose category -- </option>
+                            <option value="null">-- choose category -- </option>
 
                             {listCategory.map((value, index) => (
                               <>
@@ -189,7 +195,7 @@ const DetailsProduct = () => {
                     </div>
 
                     <div className="py-3">
-                      <h3>Costs & Price</h3>
+                      <h3>Costs & Price </h3>
                       <table className="table my-3">
                         <tr>
                           <td>
@@ -233,37 +239,41 @@ const DetailsProduct = () => {
                 </div>
 
                 <div className="pb-3">
-                  <h3>Relation</h3>
+                  <h3>Relation </h3>
 
                   <div className="row py-3">
                     <div className="col-2">
                       <label htmlFor="supplierId">Supplier : </label>
                     </div>
                     <div className="col">
-                      {listSupplier !== null && listSupplier.length > 0 ? (
-                        <>
-                          <select name="supplierId" id="supplierId" className="form-control input__type1" value={supplierId} onChange={handleSupplierChange}>
-                            <option>-- choose supplier -- </option>
+                      <>
+                        {listSupplier !== null && listSupplier.length > 0 ? (
+                          <>
+                            <>
+                              <select name="supplierId" id="supplierId" className="form-control input__type1" value={supplierId} onChange={handleSupplierChange}>
+                                <option value="null">-- choose supplier -- </option>
 
-                            {listSupplier.map((value, index) => (
-                              <>
-                                <option key={value.supplierId} value={value.supplierId}>
-                                  {value.supplierName}
-                                </option>
-                              </>
-                            ))}
-                          </select>
-                        </>
-                      ) : (
-                        <>
-                          <small>
-                            No Category available,
-                            <Link to="../all-categories" className="ps-2">
-                              All Categories
-                            </Link>
-                          </small>
-                        </>
-                      )}
+                                {listSupplier.map((value, index) => (
+                                  <>
+                                    <option key={value.supplierId} value={value.supplierId}>
+                                      {value.supplierName} - {value.supplierId}
+                                    </option>
+                                  </>
+                                ))}
+                              </select>
+                            </>
+                          </>
+                        ) : (
+                          <>
+                            <small>
+                              No Category available,
+                              <Link to="../all-categories" className="ps-2">
+                                All Categories
+                              </Link>
+                            </small>
+                          </>
+                        )}
+                      </>
                     </div>
                   </div>
                 </div>

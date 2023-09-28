@@ -27,8 +27,7 @@ public class SupplierServices {
         } else {
             supplierCode += 1;
         }
-        String countryCode = CountryConfig.getCountryCode(EnumCountry.valueOf(supplier.getCountry()));
-        supplier.setSupplierCode("SUPPLIER-JP-" + countryCode + "-" + supplierCode);
+        supplier.setSupplierCode("SUPPLIER-JP-" + supplierCode);
         supplierRepository.save(supplier);
     }
 
@@ -47,7 +46,6 @@ public class SupplierServices {
         supplier.setCompanyName(updatedSupplier.getCompanyName());
         supplier.setPhoneNumber(updatedSupplier.getPhoneNumber());
         supplier.setEmail(updatedSupplier.getEmail());
-        supplier.setCountry(updatedSupplier.getCountry());
 
         supplierRepository.save(supplier);
 

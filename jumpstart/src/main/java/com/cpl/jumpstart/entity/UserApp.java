@@ -45,10 +45,6 @@ public class UserApp implements UserDetails {
     private String phoneNumber;
     private String address;
 
-    @Enumerated(EnumType.STRING)
-    private EnumCountry country;
-
-
     // -=--=-=-=- DEPENDENCY -=-=-=-=-=-==
     @JsonIgnore
     @OneToOne(mappedBy = "userApp")

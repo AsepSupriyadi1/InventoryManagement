@@ -24,7 +24,6 @@ const DetailSupplier = () => {
     companyName: null,
     phoneNumber: null,
     email: null,
-    country: null,
   });
   // -=-=-=-=-=-=-=-=-= END OF FORM STATE -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -100,11 +99,6 @@ const DetailSupplier = () => {
                       <label htmlFor="address">Supplier Address : </label>
                       <textarea rows="3" className="form-control input__type1 bg-light" name="address" id="address" required value={formValue.address} onChange={handleChange}></textarea>
                     </div>
-
-                    <div className="mb-3">
-                      <label htmlFor="companyName">Company Name : </label>
-                      <input type="text" className="form-control  input__type1" name="companyName" id="companyName" required value={formValue.companyName} onChange={handleChange} />
-                    </div>
                   </div>
 
                   <div className="col-md">
@@ -119,18 +113,9 @@ const DetailSupplier = () => {
                       <input type="email" className="form-control input__type1" name="email" id="email" required value={formValue.email} onChange={handleChange} />
                     </div>
 
-                    <div class="mb-3">
-                      <label for="country" class="form-label">
-                        Country
-                      </label>
-                      <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange} disabled>
-                        <option>-- choose country -- </option>
-                        <option value="indonesia">Indonesia</option>
-                        <option value="singapore">Singapore</option>
-                        <option value="malaysia">Malaysia</option>
-                        <option value="philippines">Philippines</option>
-                        <option value="thailand">Thailand</option>
-                      </select>
+                    <div className="mb-3">
+                      <label htmlFor="companyName">Company Name : </label>
+                      <input type="text" className="form-control  input__type1" name="companyName" id="companyName" required value={formValue.companyName} onChange={handleChange} />
                     </div>
                   </div>
                 </div>

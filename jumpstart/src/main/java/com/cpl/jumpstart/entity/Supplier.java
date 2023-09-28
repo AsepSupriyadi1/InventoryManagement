@@ -28,9 +28,6 @@ public class Supplier {
     private String supplierName;
 
     @Column(nullable = false)
-    private String country;
-
-    @Column(nullable = false)
     private String address;
 
     @Column(nullable = false)

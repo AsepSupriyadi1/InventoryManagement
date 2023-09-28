@@ -17,6 +17,7 @@ import AllOutlet from "./pages/Outlet/AllOutlet";
 import AddOutlet from "./pages/Outlet/AddOutlet";
 import DetailOutlet from "./pages/Outlet/DetailsOutlet";
 import AllCategory from "./pages/Product/Category/AllCategory";
+import AllStok from "./pages/Product/Stock/AllStocks";
 function App() {
   const { isLoggedIn, currentUser } = useContext(AuthContext);
 
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
+        <Route path="*" element={<ErrorPage />} />
 
         {/* LOGIN REQUIRED */}
         {isLoggedIn && (
@@ -41,6 +43,9 @@ function App() {
                 <Route path="/all-outlets" element={<AllOutlet />} />
                 <Route path="/add-outlet" element={<AddOutlet />} />
                 <Route path="/detail-outlet/:outletId" element={<DetailOutlet />} />
+
+                {/* STOCKS ADMIN */}
+                <Route path="/all-stocks" element={<AllStok />} />
               </>
             )}
 

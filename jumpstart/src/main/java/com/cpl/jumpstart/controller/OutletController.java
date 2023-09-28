@@ -4,6 +4,7 @@ import com.cpl.jumpstart.dto.request.OutletDto;
 import com.cpl.jumpstart.dto.response.MessageResponse;
 import com.cpl.jumpstart.entity.Outlet;
 import com.cpl.jumpstart.entity.Supplier;
+import com.cpl.jumpstart.entity.UserApp;
 import com.cpl.jumpstart.entity.constraint.EnumCountry;
 import com.cpl.jumpstart.repositories.OutletRepository;
 import com.cpl.jumpstart.repositories.SupplierRepository;
@@ -46,7 +47,6 @@ public class OutletController {
         outlet.setOutletName(requestOutlet.getOutletName());
         outlet.setPhoneNumber(requestOutlet.getPhoneNumber());
         outlet.setOutletAddress(requestOutlet.getOutletAddress());
-        outlet.setCountry(EnumCountry.valueOf(requestOutlet.getCountry()));
 
         try {
             outletService.addNewOutlet(outlet, Long.parseLong(requestOutlet.getUserId()));
@@ -71,16 +71,33 @@ public class OutletController {
     }
 
     @PutMapping("/update/{outletId}")
-    public ResponseEntity<MessageResponse> supplierDetail(
+    public ResponseEntity<MessageResponse> outletDetail(
             @PathVariable(name = "outletId") Long outletId,
-            @RequestBody Outlet outlet
+            @RequestParam(name = "outletName") String outletName,
+            @RequestParam(name = "phoneNumber") String phoneNumber,
+            @RequestParam(name = "outletAddress") String address,
+            @RequestParam(name = "outletActive") Boolean outletActive,
+            @RequestParam(name = "staffId") String staffId
     ){
 
         try {
-            outletService.updateSupplier(outletId, outlet);
+            Outlet outlet = outletService.findById(outletId);
+            outlet.setOutletActive(outletActive);
+            outlet.setOutletName(outletName);
+            outlet.setPhoneNumber(phoneNumber);
+            outlet.setOutletAddress(address);
+            outletService.updateOutlet(outletId, outlet, staffId);
+
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessage(String.format("Outlet with id %s updated successfully", staffId));
             return ResponseEntity.ok(new MessageResponse("Outlet updated successfully"));
+
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+
+            System.out.println(e.getMessage());
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessage(String.format("Failed to update outlet with id %s", staffId));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(messageResponse);
         }
 
     }

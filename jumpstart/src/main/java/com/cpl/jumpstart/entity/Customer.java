@@ -31,9 +31,6 @@ public class Customer {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private String country;
-
-    @Column(nullable = false)
     private String address;
 
     @Column(nullable = false)

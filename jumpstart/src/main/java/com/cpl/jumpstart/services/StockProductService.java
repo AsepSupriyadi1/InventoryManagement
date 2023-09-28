@@ -4,9 +4,12 @@ package com.cpl.jumpstart.services;
 import com.cpl.jumpstart.entity.Outlet;
 import com.cpl.jumpstart.entity.Product;
 import com.cpl.jumpstart.entity.StockProduct;
+import com.cpl.jumpstart.model.StocksModel;
 import com.cpl.jumpstart.repositories.StockProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class StockProductService {
@@ -87,6 +90,12 @@ public class StockProductService {
         return stockProductRepo.findByOutletAndProduct(outlet, product).orElseThrow(
                 () -> new RuntimeException("Stock Level Not Found !")
         );
+    }
+
+
+
+    public List<String[]> findAllStockLevel(){
+        return stockProductRepo.findAllStocksUnitItem();
     }
 
 

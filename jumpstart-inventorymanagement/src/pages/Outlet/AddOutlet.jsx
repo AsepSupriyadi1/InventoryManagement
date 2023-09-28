@@ -26,7 +26,6 @@ const AddOutlet = () => {
     phoneNumber: null,
     outletAddress: null,
     userId: null,
-    country: null,
   });
 
   const handleChange = (event) => {
@@ -92,20 +91,6 @@ const AddOutlet = () => {
                     </label>
                     <input type="text" class="form-control" id="address" required name="outletAddress" value={formValue.outletAddress} onChange={handleChange} />
                   </div>
-
-                  <div class="mb-3">
-                    <label for="country" class="form-label">
-                      Country
-                    </label>
-                    <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange}>
-                      <option value="">-- choose country -- </option>
-                      <option value="indonesia">Indonesia</option>
-                      <option value="singapore">Singapore</option>
-                      <option value="malaysia">Malaysia</option>
-                      <option value="philippines">Philippines</option>
-                      <option value="thailand">Thailand</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div className="my-3">
@@ -124,7 +109,7 @@ const AddOutlet = () => {
                           {listAvailableStaff.map((value, index) => (
                             <>
                               <option key={value.userId} value={value.userId}>
-                                {value.fullName} ~ {value.country}
+                                {value.fullName}
                               </option>
                             </>
                           ))}

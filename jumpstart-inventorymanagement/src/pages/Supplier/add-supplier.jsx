@@ -21,7 +21,6 @@ const AddSupplier = () => {
 
   const [formValue, setformValue] = useState({
     supplierName: null,
-    country: null,
     address: null,
     companyName: null,
     phoneNumber: null,
@@ -71,19 +70,6 @@ const AddSupplier = () => {
                       Address
                     </label>
                     <textarea name="address" id="address" className="form-control" rows="6" required onChange={handleChange} value={formValue.address}></textarea>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="country" class="form-label">
-                      Country
-                    </label>
-                    <select name="country" id="country" className="form-control" value={formValue.country} onChange={handleChange}>
-                      <option value="">-- choose country -- </option>
-                      <option value="indonesia">Indonesia</option>
-                      <option value="singapore">Singapore</option>
-                      <option value="malaysia">Malaysia</option>
-                      <option value="philippines">Philippines</option>
-                    </select>
                   </div>
 
                   <div class="mb-3">

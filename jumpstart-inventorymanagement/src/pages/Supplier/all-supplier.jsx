@@ -100,14 +100,6 @@ const AllSupplier = () => {
       <DataTable value={listSupplier} tableStyle={{ minWidth: "50rem" }}>
         <Column field="supplierName" header="Name"></Column>
         <Column field="companyName" header="Company Name"></Column>
-        <Column
-          header="Country"
-          body={(rowData) => (
-            <>
-              <span className="text-capitalize">{rowData.country}</span>
-            </>
-          )}
-        ></Column>
         <Column field="phoneNumber" header="Phone Number"></Column>
         <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.supplierId)}></Column>
       </DataTable>

@@ -19,7 +19,6 @@ const AddUser = () => {
     email: "",
     password: "",
     fullName: "",
-    country: "",
   });
 
   const handleChange = (event) => {
@@ -69,20 +68,6 @@ const AddUser = () => {
                 Full Name : <span className="text-danger">*</span>
               </label>
               <input type="text" name="fullName" className="form-control" id="fullName" aria-describedby="emailHelp" required onChange={handleChange} value={formValue.fullName} />
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="country" className="form-label">
-                Country : <span className="text-danger">*</span>
-              </label>
-              <select name="country" id="country" className="form-control" onChange={handleChange} value={formValue.country}>
-                <option value="">-- choose country -- </option>
-                <option value="indonesia">Indonesia</option>
-                <option value="singapore">Singapore</option>
-                <option value="malaysia">Malaysia</option>
-                <option value="philippines">Philippines</option>
-                <option value="thailand">Thailand</option>
-              </select>
             </div>
 
             <div className="mb-3">

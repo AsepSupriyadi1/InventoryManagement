@@ -34,13 +34,7 @@ public class OutletService {
         } else {
             outletCode += 1;
         }
-
-        if(!userApp.getCountry().equals(outlet.getCountry())){
-            throw new RuntimeException("Outlet at least should have the same country with user");
-        }
-
-        String countryCode = CountryConfig.getCountryCode(outlet.getCountry());
-        outlet.setOutletCode("OUTLET-JP-" + countryCode + "-" + outletCode);
+        outlet.setOutletCode("OUTLET-JP-" + outletCode);
         outlet.setUserApp(userApp);
         outletRepo.save(outlet);
     }
@@ -51,15 +45,10 @@ public class OutletService {
         );
     }
 
-    public void updateSupplier(Long outletId, Outlet updatedOutlet){
-
-        Outlet outlet = findById(outletId);
-        outlet.setOutletActive(updatedOutlet.isOutletActive());
-        outlet.setCountry(updatedOutlet.getCountry());
-        outlet.setOutletName(updatedOutlet.getOutletName());
-        outlet.setPhoneNumber(updatedOutlet.getPhoneNumber());
-        outlet.setOutletAddress(updatedOutlet.getOutletAddress());
-        outletRepo.save(outlet);
+    public void updateOutlet(Long outletId, Outlet updatedOutlet, String staffId){
+        UserApp staff = userAppServices.findById(Long.parseLong(staffId));
+        updatedOutlet.setUserApp(staff);
+        outletRepo.save(updatedOutlet);
     }
 
 
