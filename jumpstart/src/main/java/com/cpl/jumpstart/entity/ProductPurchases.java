@@ -24,6 +24,8 @@ public class ProductPurchases {
     private String productId;
     private int quantity;
 
+
+
     @ManyToOne
     @JoinColumn(name = "purchase_id")
     @OnDelete(action = OnDeleteAction.CASCADE)

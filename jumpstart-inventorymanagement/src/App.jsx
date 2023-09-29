@@ -20,6 +20,7 @@ import AllCategory from "./pages/Product/Category/AllCategory";
 import AllStok from "./pages/Product/Stock/AllStocks";
 import AllBills from "./pages/Bill/AllBills";
 import AddBills from "./pages/Bill/AddBills";
+import Bayar from "./component/Bayar";
 function App() {
   const { isLoggedIn, currentUser } = useContext(AuthContext);
 
@@ -29,6 +30,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<ErrorPage />} />
+        <Route path="/bayar" element={<Bayar />} />
 
         {/* LOGIN REQUIRED */}
         {isLoggedIn && (

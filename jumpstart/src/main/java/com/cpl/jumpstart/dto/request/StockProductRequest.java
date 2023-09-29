@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StockProductRequest {
-    private String productId;
-    private String outletId;
+    private String stoksId;
+    private String productName;
+    private String outletName;
     private int minimumStockLevel;
     private int maximumStockLevel;
 }

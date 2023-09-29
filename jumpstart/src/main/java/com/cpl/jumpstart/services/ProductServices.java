@@ -101,6 +101,11 @@ public class ProductServices {
     }
 
 
+    public Product findByProductName(String productName){
+
+       return  productRepository.findByProductName(productName);
+
+    }
 
 
     public ProductCategory findCategoryById(Long categoryId){

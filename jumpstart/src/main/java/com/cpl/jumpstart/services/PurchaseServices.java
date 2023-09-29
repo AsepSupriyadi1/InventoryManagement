@@ -2,6 +2,7 @@ package com.cpl.jumpstart.services;
 
 
 import com.cpl.jumpstart.dto.request.PurchaseDto;
+import com.cpl.jumpstart.dto.response.BillsInfoDto;
 import com.cpl.jumpstart.entity.*;
 import com.cpl.jumpstart.entity.constraint.PurchasesStatus;
 import com.cpl.jumpstart.repositories.ProductPurchasesRepository;
@@ -43,7 +44,7 @@ public class PurchaseServices {
     private UserAppServices userAppServices;
 
 
-    public void addNewPurchase(
+    public BillsInfoDto addNewPurchase(
             PurchaseDto purchaseDto
     ) {
 
@@ -84,20 +85,24 @@ public class PurchaseServices {
             productPurchases.setProductId(product.getProductId().toString());
             productPurchases.setPurchases(purchases);
 
-            boolean isMinimumStockLevel = requestProduct.getQuantity() >= product.getStockProduct().getMinimumStockLevel();
-            boolean isGreaterThanMaximum = requestProduct.getQuantity() > product.getStockProduct().getMaximumStockLevel();
-            boolean isMax = requestProduct.getQuantity() + product.getStockProduct().getCurrentQuantity() > product.getStockProduct().getMaximumStockLevel();
+            if(product.getStockProduct() != null){
 
-            if (!isMinimumStockLevel) {
-                throw new RuntimeException("MINIMUM_ERROR");
-            }
+                boolean isMinimumStockLevel = requestProduct.getQuantity() >= product.getStockProduct().getMinimumStockLevel();
+                boolean isGreaterThanMaximum = requestProduct.getQuantity() > product.getStockProduct().getMaximumStockLevel();
+                boolean isMax = requestProduct.getQuantity() + product.getStockProduct().getCurrentQuantity() > product.getStockProduct().getMaximumStockLevel();
 
-            if (isGreaterThanMaximum) {
-                throw new RuntimeException("GREATER_ERROR");
-            }
 
-            if (isMax) {
-                throw new RuntimeException("MAX_ERROR");
+                if (!isMinimumStockLevel) {
+                    throw new RuntimeException("MINIMUM_ERROR");
+                }
+
+                if (isGreaterThanMaximum) {
+                    throw new RuntimeException("GREATER_ERROR");
+                }
+
+                if (isMax) {
+                    throw new RuntimeException("MAX_ERROR");
+                }
             }
 
             productPurchases.setQuantity(requestProduct.getQuantity());
@@ -106,7 +111,7 @@ public class PurchaseServices {
             purchasedProductList.add(productPurchases);
 
             // CALCULATE THE PRICE
-            totalAmount += product.getPrices();
+            totalAmount += product.getPrices() * requestProduct.getQuantity();
 
         }
 
@@ -128,9 +133,22 @@ public class PurchaseServices {
         }
         purchases.setPurchaseCode("BILL-JP-" + puchaseCode);
 
-        purchasesRepo.save(purchases);
-        productPurchasesRepo.saveAll(purchasedProductList);
+       return new BillsInfoDto(purchases, purchasedProductList);
+    }
 
+
+
+    public void approveBills(BillsInfoDto billsInfoDto){
+        purchasesRepo.save(billsInfoDto.getPurchases());
+
+        for(ProductPurchases productPurchases : billsInfoDto.getPurchasesList()){
+            ProductPurchases items = new ProductPurchases();
+            items.setQuantity(productPurchases.getQuantity());
+            items.setPurchases(billsInfoDto.getPurchases());
+            items.setProductId(productPurchases.getProductId());
+            items.setProductName(productPurchases.getProductName());
+            productPurchasesRepo.save(items);
+        }
 
     }
 

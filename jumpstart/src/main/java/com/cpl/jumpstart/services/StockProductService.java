@@ -25,9 +25,9 @@ public class StockProductService {
     private OutletService outletService;
 
 
-    public void addNewStock(StockProduct stockProduct, String outletId, String productId){
-        Outlet outlet = outletService.findById(Long.parseLong(outletId));
-        Product product = productServices.findProductById(Long.parseLong(productId));
+    public void addNewStock(StockProduct stockProduct, String outletName, String productName){
+        Outlet outlet = outletService.findByOutletName(outletName);
+        Product product = productServices.findByProductName(productName);
 
         int maximumStockLevel = stockProduct.getMaximumStockLevel();
         int minimumStockLevel = stockProduct.getMinimumStockLevel();

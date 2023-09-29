@@ -68,6 +68,7 @@ public class Purchases {
 
 
     // -=-=-=-=-=- RELATION -=-=-=-=-=-=-=
+    @JsonIgnore
     @OneToMany(mappedBy = "purchases", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductPurchases> productPurchasesList = new ArrayList<>();
 

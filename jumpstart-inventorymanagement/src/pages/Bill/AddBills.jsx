@@ -8,12 +8,13 @@ import { getAllAvailableStaffsAPI } from "../../api/user";
 import { AuthContext } from "../../context/auth-context";
 import { addNewOutletAPI, getAllOutlets } from "../../api/outlet";
 import { errorReturnConfAlert, successReturnConfAlert } from "../../alert/sweetAlert";
-import { Button, Modal } from "react-bootstrap";
+import { Button, ListGroup, Modal } from "react-bootstrap";
 import { getAllSupplierAPI } from "../../api/supplier";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { findAllBySupplierIdAPI } from "../../api/product";
+import { addNewBillsAPI, confirmPurchasesAPI } from "../../api/purchases";
 
 const AddBills = () => {
   const { token } = useContext(AuthContext);
@@ -23,6 +24,7 @@ const AddBills = () => {
   const [configModal, setConfigModal] = useState(true);
   const [addItemsModal, setAddItemsModal] = useState(false);
   const [updateItemsModal, setUpdateItemsModal] = useState(false);
+  const [confirmBillsModal, setConfirmBillsModal] = useState(false);
   const [cache, setCache] = useState(null);
   // --=-=-=-=-=--=-=-=- END OF MODALS CONFIG -=-=-=-=-=-=-==
 
@@ -33,6 +35,7 @@ const AddBills = () => {
   });
   const [outletConf, setOutletCond] = useState(null);
   const [supplierConf, setSupplierConf] = useState(null);
+  const [billsConfirmDetails, setBillsConfirmDetails] = useState(null);
   // -=-=-=-=-=-=-= END OF CONFIG STATE --=-=-=-=-=-=-=
 
   // -=-=-=-=-=-=-=-= LIST UNTUK CONFIG _=-=-=-=-
@@ -234,7 +237,37 @@ const AddBills = () => {
       purchaseItems.push(items);
     });
 
-    console.log(purchaseItems);
+    let data = {
+      supplierId: config.supplier.supplierId,
+      listProduct: purchaseItems,
+      outletId: config.outlet.outletId,
+    };
+
+    console.log(data);
+
+    addNewBillsAPI(token, data)
+      .then((response) => {
+        console.log(response.data);
+        setBillsConfirmDetails(response.data);
+        setConfirmBillsModal(true);
+      })
+      .catch((err) => {
+        let statusError = err.response.data.message;
+        errorReturnConfAlert("Failed !", statusError);
+      });
+  };
+
+  const handleConfirmsBill = () => {
+    confirmPurchasesAPI(token, billsConfirmDetails).then((response) => {
+      successReturnConfAlert("Success", "Successfully Add new Bills")
+        .then(() => {
+          navigate("../all-purchases");
+        })
+        .catch((err) => {
+          alert("Error Occured !");
+          console.log(err);
+        });
+    });
   };
 
   return (
@@ -445,6 +478,70 @@ const AddBills = () => {
       </Modal>
 
       {/* END OF UPDATE ITEMS */}
+
+      {/* CONFIRM MODAL */}
+
+      {billsConfirmDetails !== null && (
+        <>
+          <Modal show={confirmBillsModal} size="lg" onHide={() => setConfirmBillsModal(false)}>
+            <Modal.Header closeButton>
+              <Modal.Title>Update Amount</Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body>
+              <div className="text-center py-4">
+                <h2>Jumpstart Bills</h2>
+              </div>
+
+              <div className="my-3">
+                <h3 className="mb-3">Outlet Info</h3>
+                <ListGroup>
+                  <ListGroup.Item>Outlet Name : {billsConfirmDetails.purchases.outlet.outletName}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Code : {billsConfirmDetails.purchases.outlet.outletCode}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Address : {billsConfirmDetails.purchases.outlet.outletAddress}</ListGroup.Item>
+                </ListGroup>
+              </div>
+
+              <div className="my-3">
+                <h3 className="mb-3">Supplier Info</h3>
+                <ListGroup>
+                  <ListGroup.Item>Supplier Name : {billsConfirmDetails.purchases.supplierName}</ListGroup.Item>
+                  <ListGroup.Item>Supplier Code : {billsConfirmDetails.purchases.supplierCode}</ListGroup.Item>
+                </ListGroup>
+              </div>
+
+              <div className="my-5">
+                <h3 className="mb-3">Items Info</h3>
+                <div className="row min-scroll">
+                  <DataTable value={billsConfirmDetails.purchasesList} tableStyle={{ minWidth: "50rem" }}>
+                    <Column field="productName" header="Product Name"></Column>
+                    <Column field="quantity" header="Amount"></Column>
+                  </DataTable>
+                </div>
+              </div>
+
+              <div className="my-3">
+                <h3 className="mb-3">Bills Info</h3>
+                <ListGroup>
+                  <ListGroup.Item>
+                    Total Amount : <b>${billsConfirmDetails.purchases.totalAmount}</b>
+                  </ListGroup.Item>
+                </ListGroup>
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setConfirmBillsModal(false)}>
+                Close
+              </Button>
+              <button className="btn btn-primary" type="submit" onClick={handleConfirmsBill}>
+                Save
+              </button>
+            </Modal.Footer>
+          </Modal>
+        </>
+      )}
+
+      {/* END CONFIRM MODAL */}
     </>
   );
 };

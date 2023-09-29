@@ -1,6 +1,7 @@
 package com.cpl.jumpstart.repositories;
 
 import com.cpl.jumpstart.entity.Outlet;
+import com.cpl.jumpstart.entity.Product;
 import com.cpl.jumpstart.entity.UserApp;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,5 +18,7 @@ public interface OutletRepository extends JpaRepository<Outlet, Long> {
     Optional<Outlet> findByUserApp(UserApp userApp);
 
 
+    @Query("SELECT u FROM Outlet u WHERE u.outletName = :outletName")
+    Outlet findByOutletName(String outletName);
 
 }

@@ -9,8 +9,8 @@ export const getAllStocksLevelAPI = async (token) => {
 };
 
 //  ADD NEW CATEGORY
-export const addNewCategory = async (token, data) => {
-  return await axios.post(`${BASE_URL}/product/category`, data, {
+export const addOrUpdateStocksLevelAPI = async (token, data) => {
+  return await axios.post(`${BASE_URL}/stock`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };

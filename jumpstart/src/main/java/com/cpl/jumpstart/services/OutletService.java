@@ -45,6 +45,11 @@ public class OutletService {
         );
     }
 
+
+    public Outlet findByOutletName(String outletName){
+        return outletRepo.findByOutletName(outletName);
+    }
+
     public void updateOutlet(Long outletId, Outlet updatedOutlet, String staffId){
         UserApp staff = userAppServices.findById(Long.parseLong(staffId));
         updatedOutlet.setUserApp(staff);

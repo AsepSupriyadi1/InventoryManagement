@@ -9,9 +9,32 @@ export const getAllPurchasesAPI = async (token) => {
   });
 };
 
-//  ADD NEW CATEGORY
+export const addNewBillsAPI = async (token, data) => {
+  return await axios.post(`${BASE_URL}/purchase`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const confirmPurchasesAPI = async (token, data) => {
+  return await axios.post(`${BASE_URL}/purchase/approve`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
 export const getPurchasesDetailsAPI = async (token, purchaseId) => {
-  return await axios.post(`${BASE_URL}/purchase/detail/`, purchaseId, {
+  return await axios.get(`${BASE_URL}/purchase/detail/` + purchaseId, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const getAllDetailsItem = async (token, purchaseId) => {
+  return await axios.get(`${BASE_URL}/purchase/items/` + purchaseId, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const receiveGoodsAPI = async (token, purchaseId) => {
+  return await axios.get(`${BASE_URL}/purchase/update/` + purchaseId, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };

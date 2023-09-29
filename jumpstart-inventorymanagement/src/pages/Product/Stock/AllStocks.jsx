@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 import { useContext, useEffect, useState } from "react";
 import { faPencil, faSearch, faShop } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getAllStocksLevelAPI } from "../../../api/stocks";
+import { addOrUpdateStocksLevelAPI, getAllStocksLevelAPI } from "../../../api/stocks";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { getAllOutlets } from "../../../api/outlet";
@@ -30,6 +30,7 @@ const AllStok = () => {
 
   //  -=-=-=-=-=-=-=-=-= DETAILS STATE -=-=-=-=-=--=-=
   const [detailsStockLevel, setSelectedStockLevel] = useState({
+    stockId: "undefined",
     outletName: "",
     productName: "",
     minimumQuantity: 0,
@@ -52,7 +53,7 @@ const AllStok = () => {
     getAllStocksLevelAPI(token)
       .then((response) => {
         let responseData = response.data;
-
+        console.log(responseData);
         setListStocksLevel(responseData);
       })
       .catch((err) => {
@@ -89,15 +90,45 @@ const AllStok = () => {
     }
   }, [selectedOutlet]);
 
-  const handleStockLevelDetails = (outletName, productName, minQuantity, maxQuantity) => {
+  const handleStockLevelDetails = (stockId, outletName, productName, minQuantity, maxQuantity) => {
     const stockLevelsDetailData = {
+      stockId: stockId,
       outletName: outletName,
       productName: productName,
       minimumQuantity: minQuantity,
       maximumQuantity: maxQuantity,
     };
+
     setSelectedStockLevel(stockLevelsDetailData);
     setDetailsStockLevelModal(true);
+  };
+
+  const handleChange = (e) => {
+    setSelectedStockLevel({ ...detailsStockLevel, [e.target.name]: e.target.value });
+  };
+
+  const handleUpdateOrAddStockLevel = (e) => {
+    e.preventDefault();
+    const data = {
+      stoksId: detailsStockLevel.stockId,
+      productName: detailsStockLevel.productName,
+      outletName: detailsStockLevel.outletName,
+      minimumStockLevel: parseInt(detailsStockLevel.minimumQuantity),
+      maximumStockLevel: parseInt(detailsStockLevel.maximumQuantity),
+    };
+
+    console.log(data);
+
+    addOrUpdateStocksLevelAPI(token, data)
+      .then((response) => {
+        getAllStocksLevel();
+        successReturnConfAlert("Success", "Stock Level Added / Updated !");
+        setDetailsStockLevelModal(false);
+      })
+      .catch((err) => {
+        let errMessage = err.response.data.message;
+        errorReturnConfAlert("Failed", errMessage);
+      });
   };
 
   return (
@@ -133,7 +164,7 @@ const AllStok = () => {
                   body={(rowData) => (
                     <>
                       <div className="text-center">
-                        <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
+                        <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.stocksId, rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
                           <FontAwesomeIcon icon={faPencil} /> Set Stocks Level
                         </button>
                       </div>
@@ -158,7 +189,7 @@ const AllStok = () => {
                 body={(rowData) => (
                   <>
                     <div className="text-center">
-                      <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
+                      <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.stocksId, rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
                         <FontAwesomeIcon icon={faPencil} /> Set Stocks Level
                       </button>
                     </div>
@@ -174,38 +205,38 @@ const AllStok = () => {
         <Modal.Header closeButton>
           <Modal.Title>Set Stock Level Product</Modal.Title>
         </Modal.Header>
-        <form>
+        <form onSubmit={handleUpdateOrAddStockLevel}>
           <Modal.Body>
             <div class="mb-3">
               <label for="outletName" class="form-label">
                 Outlet Name
               </label>
-              <input type="text" class="form-control" id="outletName" required value={detailsStockLevel.outletName} name="categoryName" />
+              <input type="text" class="form-control" id="outletName" required value={detailsStockLevel.outletName} name="categoryName" disabled />
             </div>
             <div class="mb-3">
               <label for="productName" class="form-label">
                 Product Name
               </label>
-              <input type="text" class="form-control" id="productName" required value={detailsStockLevel.productName} name="categoryName" />
+              <input type="text" class="form-control" id="productName" required value={detailsStockLevel.productName} name="categoryName" disabled />
             </div>
             <div class="mb-3">
               <label for="minQuantity" class="form-label">
                 Minimum Quantity
               </label>
-              <input type="text" class="form-control" id="minQuantity" required value={detailsStockLevel.minimumQuantity} name="categoryName" />
+              <input type="number" class="form-control" id="minimumQuantity" required value={detailsStockLevel.minimumQuantity} name="minimumQuantity" onChange={handleChange} />
             </div>
             <div class="mb-3">
               <label for="maxQuantity" class="form-label">
                 Maximum Quantity
               </label>
-              <input type="text" class="form-control" id="maxQuantity" required value={detailsStockLevel.maximumQuantity} name="categoryName" />
+              <input type="number" class="form-control" id="maximumQuantity" required value={detailsStockLevel.maximumQuantity} name="maximumQuantity" onChange={handleChange} />
             </div>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setDetailsStockLevelModal(false)}>
               Close
             </Button>
-            <Button variant="primary" type="submit" onClick={() => setDetailsStockLevelModal(false)}>
+            <Button variant="primary" type="submit">
               Save
             </Button>
           </Modal.Footer>

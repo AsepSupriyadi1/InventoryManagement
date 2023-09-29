@@ -2,11 +2,10 @@ package com.cpl.jumpstart.controller;
 
 
 import com.cpl.jumpstart.dto.request.PurchaseDto;
+import com.cpl.jumpstart.dto.response.BillsInfoDto;
 import com.cpl.jumpstart.dto.response.MessageResponse;
-import com.cpl.jumpstart.entity.Outlet;
-import com.cpl.jumpstart.entity.Product;
-import com.cpl.jumpstart.entity.Purchases;
-import com.cpl.jumpstart.entity.Supplier;
+import com.cpl.jumpstart.entity.*;
+import com.cpl.jumpstart.repositories.ProductPurchasesRepository;
 import com.cpl.jumpstart.repositories.ProductRepository;
 import com.cpl.jumpstart.repositories.PurchasesRepository;
 import com.cpl.jumpstart.services.OutletService;
@@ -34,6 +33,9 @@ public class PurchaseController {
     private PurchasesRepository purchasesRepository;
 
     @Autowired
+    private ProductPurchasesRepository productPurchasesRepo;
+
+    @Autowired
     private PurchaseServices purchaseServices;
 
 
@@ -45,19 +47,27 @@ public class PurchaseController {
 
 
     @GetMapping
-    public ResponseEntity<List<Purchases>> getAllPurchases(){
+    public ResponseEntity<List<Purchases>> getAllPurchases() {
         List<Purchases> purchasesList = purchasesRepository.findAll();
+        return ResponseEntity.ok(purchasesList);
+    }
+
+    @GetMapping("/items/{purchaseId}")
+    public ResponseEntity<List<ProductPurchases>> getAllProductPurchases(
+            @PathVariable(name = "purchaseId") Long purchaseId
+    ) {
+        List<ProductPurchases> purchasesList = productPurchasesRepo.findAllByProductByPurchases(purchaseId);
         return ResponseEntity.ok(purchasesList);
     }
 
     @GetMapping("/detail/{purchaseId}")
     public ResponseEntity<Purchases> detailPurchases(
             @PathVariable(name = "purchaseId") Long purchaseId
-    ){
+    ) {
         try {
             Purchases purchases = purchaseServices.findPurchaseById(purchaseId);
             return ResponseEntity.ok(purchases);
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
@@ -66,11 +76,11 @@ public class PurchaseController {
 
 
     @PostMapping
-    public ResponseEntity<MessageResponse> addNewPurchases(@RequestBody PurchaseDto purchaseDto) {
+    public ResponseEntity<?> addNewPurchases(@RequestBody PurchaseDto purchaseDto) {
 
         try {
-            purchaseServices.addNewPurchase(purchaseDto);
-            return ResponseEntity.ok(new MessageResponse("Purchase added successfully !"));
+            BillsInfoDto billsInfoDto = purchaseServices.addNewPurchase(purchaseDto);
+            return ResponseEntity.ok(billsInfoDto);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -94,7 +104,22 @@ public class PurchaseController {
     }
 
 
-    @PutMapping("/update/{purchaseId}")
+
+    @PostMapping("/approve")
+    public ResponseEntity<MessageResponse> approveBills(
+            @RequestBody BillsInfoDto billsInfoDto
+    ) {
+        try {
+            purchaseServices.approveBills(billsInfoDto);
+            return ResponseEntity.ok(new MessageResponse("Purchases Sucessfully added"));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Purchases failed to add !"));
+        }
+    }
+
+
+    @GetMapping("/update/{purchaseId}")
     public ResponseEntity<MessageResponse> receiveProduct(
             @PathVariable(name = "purchaseId") Long purchaseId
     ) {

@@ -37,7 +37,16 @@ public class StockController {
             stockProduct.setMinimumStockLevel(stockProductRequest.getMinimumStockLevel());
             stockProduct.setMaximumStockLevel(stockProductRequest.getMaximumStockLevel());
 
-            stockProductService.addNewStock(stockProduct, stockProductRequest.getOutletId(), stockProductRequest.getProductId());
+
+            if(stockProductRequest.getStoksId() != null){
+                StockProduct stockProductDetails = stockProductService.findById(Long.parseLong(stockProductRequest.getStoksId()));
+                stockProductDetails.setMinimumStockLevel(stockProductRequest.getMinimumStockLevel());
+                stockProductDetails.setMaximumStockLevel(stockProductRequest.getMaximumStockLevel());
+                stockProductRepository.save(stockProductDetails);
+                return ResponseEntity.ok(new MessageResponse("Stock strategy updated successfully !"));
+            }
+
+            stockProductService.addNewStock(stockProduct, stockProductRequest.getOutletName(), stockProductRequest.getProductName());
 
             return ResponseEntity.ok(new MessageResponse("Stock strategy added successfully"));
 
