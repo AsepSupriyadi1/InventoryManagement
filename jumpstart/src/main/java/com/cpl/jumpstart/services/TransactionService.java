@@ -69,14 +69,15 @@ public class TransactionService {
         }
 
 
-        List<CustomerProductPurchases> purchasedProductList = new ArrayList<>();
-        double totalAmount = 0;
 
 
         if(transactionDto.getProductDtoList().size() == 0){
             throw new RuntimeException("NO_ITEMS");
         }
 
+
+        List<CustomerProductPurchases> purchasedProductList = new ArrayList<>();
+        double totalAmount = 0;
 
         for (TransactionProductDto requestProduct : transactionDto.getProductDtoList()) {
 
@@ -136,6 +137,21 @@ public class TransactionService {
         return new TransactionInfoDto(transaction, purchasedProductList);
     }
 
+    public CustomerTransaction findTransactionById(Long transactionId){
+        return transactionRepo.findById(transactionId).orElseThrow(
+                () -> new RuntimeException(String.format("Transaction not found for id %s", transactionId))
+        );
+    }
+
+
+    public List<CustomerTransaction> findALlTransactionByOutlet(Long outletId){
+        return transactionRepo.findAllTransactionByOutlet(outletId);
+    }
+
+
+    public List<CustomerProductPurchases> findAllProductPurchasesTransaction(Long transactionId){
+        return transactionProductRepo.findAllByProductByTransactionId(transactionId);
+    }
 
 
     public Long getLastSavedTransactionId() {

@@ -23,6 +23,8 @@ import AddBills from "./pages/Bill/AddBills";
 import Bayar from "./component/Bayar";
 import AllCustomers from "./pages/Customers/AllCustomers";
 import AddNewCustomers from "./pages/Customers/AddNewCustomers";
+import AllSales from "./pages/Customers/AllSales";
+import AddSales from "./pages/Customers/AddSales";
 function App() {
   const { isLoggedIn, currentUser } = useContext(AuthContext);
 
@@ -68,6 +70,8 @@ function App() {
             {/* CUSTOMERS ROUTES */}
             <Route path="/all-customers" element={<AllCustomers />} />
             <Route path="/add-customers" element={<AddNewCustomers />} />
+            <Route path="/all-sales" element={<AllSales />} />
+            <Route path="/add-sales" element={<AddSales />} />
 
             <Route path="/all-categories" element={<AllCategory />} />
 
