@@ -20,13 +20,13 @@ public class StockProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long stockId;
 
-    @OneToOne
-    @JoinColumn(name = "product_id")
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Product product;
 
-    @OneToOne
-    @JoinColumn(name = "outlet_id")
+    @ManyToOne
+    @JoinColumn(name = "outlet_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Outlet outlet;
 

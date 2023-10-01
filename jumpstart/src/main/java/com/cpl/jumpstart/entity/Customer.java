@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Date;
 import java.util.List;
 
 @Data
@@ -34,10 +35,13 @@ public class Customer {
     private String address;
 
     @Column(nullable = false)
-    private String customerIdentityCard;
+    private String email;
+
+    private Date dateRegister;
 
     @ManyToOne
     @JoinColumn(name = "outlet_id")
     private Outlet outlet;
+
 
 }

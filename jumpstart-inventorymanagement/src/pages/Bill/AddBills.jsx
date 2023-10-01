@@ -3,7 +3,7 @@ import Layout from "../../component/Layout";
 import DashHeading from "../../component/part/DashHeading";
 import { HeaderPic } from "../../assets/images/_images";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { getAllAvailableStaffsAPI } from "../../api/user";
 import { AuthContext } from "../../context/auth-context";
 import { addNewOutletAPI, getAllOutlets } from "../../api/outlet";
@@ -61,10 +61,14 @@ const AddBills = () => {
   const getAllListProductSupplier = () => {
     findAllBySupplierIdAPI(token, config.supplier.supplierId)
       .then((response) => {
+        if (response.data.length === 0) {
+          errorReturnConfAlert("Failed !", "This supplier doesn't have any product to supply yet !");
+          return navigate("../all-purchases");
+        }
         setListSupplierProduct(response.data);
+        console.log(response.data);
       })
       .catch((err) => {
-        alert("Error Occured");
         console.log(err);
       });
   };
@@ -163,30 +167,48 @@ const AddBills = () => {
     icon: faDollar,
   };
 
-  const handleSubmitConf = (e) => {
+  const handleSubmitConf = async (e) => {
     e.preventDefault();
-    if (outletConf === null || supplierConf == null) {
-      return errorReturnConfAlert("Failed", "You have to identify both constraint !").then(() => {
-        navigate("../all-purchases");
-      });
+
+    if (outletConf === null || supplierConf === null) {
+      errorReturnConfAlert("Failed", "You have to identify both constraints !");
+      return navigate("../all-purchases");
     }
 
-    const selectedSupplier = listSupplier.filter((value, index) => value.supplierId == supplierConf)[0];
-    const selectedOutlets = listOutlet.filter((value, index) => value.outletId == outletConf)[0];
+    const selectedSupplier = listSupplier.filter((value) => value.supplierId == supplierConf)[0];
+    const selectedOutlets = listOutlet.filter((value) => value.outletId == outletConf)[0];
 
+    setBothConfig(selectedSupplier, selectedOutlets);
+  };
+
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return; // 👈️ return early if initial render
+    }
+
+    console.log(config.outlet, config.supplier);
+
+    if (config.outlet !== null && config.supplier !== null) {
+      setConfigModal(false);
+      getAllListProductSupplier();
+    }
+  }, [config]);
+
+  const setBothConfig = (selectedSupplier, selectedOutlets) => {
     setConfig({
       supplier: selectedSupplier,
       outlet: selectedOutlets,
     });
-
-    getAllListProductSupplier();
-    setConfigModal(false);
   };
 
   useEffect(() => {
     getAllSupplierAPI(token)
       .then((response) => {
         let data = response.data;
+
         setListSupplier(response.data);
         if (data.length > 0) {
           setSupplierConf(data[0].supplierId);
@@ -200,6 +222,7 @@ const AddBills = () => {
     getAllOutlets(token)
       .then((response) => {
         let data = response.data;
+
         setListOutlet(response.data);
         if (data.length > 0) {
           setOutletCond(data[0].outletId);
@@ -277,7 +300,7 @@ const AddBills = () => {
         <Modal.Header closeButton>
           <Modal.Title>Choose Outlet & Supplier</Modal.Title>
         </Modal.Header>
-        <form>
+        <form onSubmit={handleSubmitConf}>
           <Modal.Body>
             <div class="mb-3">
               <label for="outletId" class="form-label">
@@ -339,7 +362,7 @@ const AddBills = () => {
             <Button variant="secondary" onClick={() => navigate("../all-purchases")}>
               Close
             </Button>
-            <Button variant="primary" type="submit" onClick={handleSubmitConf}>
+            <Button variant="primary" type="submit">
               Save
             </Button>
           </Modal.Footer>
@@ -349,7 +372,7 @@ const AddBills = () => {
 
       {/* LAYOUT  */}
       <Layout>
-        {config.outlet !== null && config.supplier !== null && (
+        {config.outlet !== null && config.supplier !== null && listSupplierProduct !== null && (
           <>
             <DashHeading data={metaPageData} />
 
@@ -369,7 +392,7 @@ const AddBills = () => {
                 </table>
               </div>
 
-              {listSupplierProduct !== null && listSupplierProduct.length !== 0 && (
+              {listSupplierProduct !== null && listSupplierProduct.length != 0 && (
                 <>
                   <button className="btn btn-primary" onClick={handleShowAddItemsModal}>
                     Add New Items <FontAwesomeIcon icon={faPlus} />

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StockProductService {
@@ -60,6 +61,11 @@ public class StockProductService {
     }
 
 
+    public StockProduct findByProductAndOutlet(Long productId, Long stockId){
+        return  stockProductRepo.findStockByProductAndOutlet(productId, stockId);
+    }
+
+
     public void deleteStockById(Long stockId){
         StockProduct stockProduct = findById(stockId);
         stockProductRepo.deleteById(stockId);
@@ -85,11 +91,9 @@ public class StockProductService {
         stockProductRepo.save(stockProduct);
     }
 
-    public StockProduct findByOutletAndProduct(Outlet outlet, Product product){
+    public Optional<StockProduct> findByOutletAndProduct(Outlet outlet, Product product){
 
-        return stockProductRepo.findByOutletAndProduct(outlet, product).orElseThrow(
-                () -> new RuntimeException("Stock Level Not Found !")
-        );
+        return stockProductRepo.findByOutletAndProduct(outlet, product);
     }
 
 

@@ -38,7 +38,7 @@ public class StockController {
             stockProduct.setMaximumStockLevel(stockProductRequest.getMaximumStockLevel());
 
 
-            if(stockProductRequest.getStoksId() != null){
+            if(!stockProductRequest.getStoksId().equals("undefined")){
                 StockProduct stockProductDetails = stockProductService.findById(Long.parseLong(stockProductRequest.getStoksId()));
                 stockProductDetails.setMinimumStockLevel(stockProductRequest.getMinimumStockLevel());
                 stockProductDetails.setMaximumStockLevel(stockProductRequest.getMaximumStockLevel());

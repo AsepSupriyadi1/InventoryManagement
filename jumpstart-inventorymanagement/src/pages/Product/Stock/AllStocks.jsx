@@ -2,7 +2,7 @@ import { addNewCategory, deleteCategoryAPI, detailCategoryAPI, getAllCategory, u
 import Layout from "../../../component/Layout";
 import DashHeading from "../../../component/part/DashHeading";
 import { AuthContext } from "../../../context/auth-context";
-import { Button, Modal } from "react-bootstrap";
+import { Badge, Button, Modal } from "react-bootstrap";
 import { errorAlert, errorReturnConfAlert, successConfAlert, successReturnConfAlert } from "../../../alert/sweetAlert";
 import Swal from "sweetalert2";
 import { useContext, useEffect, useState } from "react";
@@ -30,7 +30,7 @@ const AllStok = () => {
 
   //  -=-=-=-=-=-=-=-=-= DETAILS STATE -=-=-=-=-=--=-=
   const [detailsStockLevel, setSelectedStockLevel] = useState({
-    stockId: "undefined",
+    stockId: null,
     outletName: "",
     productName: "",
     minimumQuantity: 0,
@@ -99,6 +99,8 @@ const AllStok = () => {
       maximumQuantity: maxQuantity,
     };
 
+    console.log(stockLevelsDetailData);
+
     setSelectedStockLevel(stockLevelsDetailData);
     setDetailsStockLevelModal(true);
   };
@@ -123,6 +125,7 @@ const AllStok = () => {
       .then((response) => {
         getAllStocksLevel();
         successReturnConfAlert("Success", "Stock Level Added / Updated !");
+        setSelectedOutlet("reset");
         setDetailsStockLevelModal(false);
       })
       .catch((err) => {
@@ -160,6 +163,40 @@ const AllStok = () => {
                 <Column field="maxStockLevelQuantity" header="Maximum Stock Level"></Column>
                 <Column field="outletName" header="Outlet Name"></Column>
                 <Column
+                  header="Stock Status"
+                  body={(rowData) => (
+                    <>
+                      <div className="text-center">
+                        {rowData.minStockLevelQuantity == 0 && rowData.maxStockLevelQuantity == 0 && (
+                          <>
+                            <Badge bg="secondary">unset</Badge>
+                          </>
+                        )}
+
+                        {rowData.minStockLevelQuantity != 0 && rowData.maxStockLevelQuantity != 0 && (
+                          <>
+                            {rowData.currentQuantity >= rowData.minStockLevelQuantity && rowData.currentQuantity <= rowData.maxStockLevelQuantity && (
+                              <>
+                                <Badge bg="success">normal</Badge>
+                              </>
+                            )}
+                            {rowData.currentQuantity == 0 && (
+                              <>
+                                <Badge bg="danger">out of stock</Badge>
+                              </>
+                            )}
+                            {rowData.currentQuantity > rowData.maxStockLevelQuantity && (
+                              <>
+                                <Badge bg="danger">stock exceeded</Badge>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
+                ></Column>
+                <Column
                   header="actions"
                   body={(rowData) => (
                     <>
@@ -178,12 +215,46 @@ const AllStok = () => {
 
         {filteredSrockLevel === null && (
           <div className="row min-scroll">
-            <DataTable value={listStocksLevel} dataKey="categoryId" tableStyle={{ minWidth: "50rem", maxHeight: "100px", overflowY: "hidden" }}>
+            <DataTable value={listStocksLevel} dataKey="categoryId" tableStyle={{ minWidth: "100rem", maxHeight: "100px", overflowY: "hidden" }}>
               <Column field="productName" header="Product Name"></Column>
               <Column field="currentQuantity" header="Quantity On Hand"></Column>
               <Column field="minStockLevelQuantity" header="Minimum Stock Level"></Column>
               <Column field="maxStockLevelQuantity" header="Maximum Stock Level"></Column>
               <Column field="outletName" header="Outlet Name"></Column>
+              <Column
+                header="Stock Status"
+                body={(rowData) => (
+                  <>
+                    <div className="text-center">
+                      {rowData.minStockLevelQuantity == 0 && rowData.maxStockLevelQuantity == 0 && (
+                        <>
+                          <Badge bg="secondary">unset</Badge>
+                        </>
+                      )}
+
+                      {rowData.minStockLevelQuantity != 0 && rowData.maxStockLevelQuantity != 0 && (
+                        <>
+                          {rowData.currentQuantity >= rowData.minStockLevelQuantity && rowData.currentQuantity <= rowData.maxStockLevelQuantity && (
+                            <>
+                              <Badge bg="success">normal</Badge>
+                            </>
+                          )}
+                          {rowData.currentQuantity == 0 && (
+                            <>
+                              <Badge bg="danger">out of stock</Badge>
+                            </>
+                          )}
+                          {rowData.currentQuantity > rowData.maxStockLevelQuantity && (
+                            <>
+                              <Badge bg="danger">stock exceeded</Badge>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+              ></Column>
               <Column
                 header="actions"
                 body={(rowData) => (

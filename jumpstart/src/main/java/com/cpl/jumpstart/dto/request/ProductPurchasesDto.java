@@ -1,4 +1,4 @@
-package com.cpl.jumpstart.entity;
+package com.cpl.jumpstart.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

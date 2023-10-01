@@ -33,17 +33,19 @@ public class ProductServices {
     public void addProduct(Product product, String supplierId, String categoryId) {
 
         if(!supplierId.equals("null")) {
-            ProductCategory category = categoryRepository.findById(Long.parseLong(categoryId)).orElseThrow(
-                    () -> new RuntimeException("Category not found " + categoryId)
-            );
-            product.setCategory(category);
-        }
-
-        if(!categoryId.equals("null")) {
             Supplier supplier = supplierRepository.findById(Long.parseLong(supplierId)).orElseThrow(
                     () -> new RuntimeException("Supplier not found " + supplierId)
             );
             product.setSupplier(supplier);
+            
+
+        }
+
+        if(!categoryId.equals("null")) {
+            ProductCategory category = categoryRepository.findById(Long.parseLong(categoryId)).orElseThrow(
+                    () -> new RuntimeException("Category not found " + categoryId)
+            );
+            product.setCategory(category);
         }
 
 
@@ -63,10 +65,6 @@ public class ProductServices {
 
     public void deleteById(Long productId){
         productRepository.deleteById(productId);
-    }
-
-    public List<Product> findAllProductWithStockLevel(){
-        return productRepository.findAllProductWithStockLevel();
     }
 
 

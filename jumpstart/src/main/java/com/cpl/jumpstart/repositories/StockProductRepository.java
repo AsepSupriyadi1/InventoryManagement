@@ -19,4 +19,7 @@ public interface StockProductRepository extends JpaRepository<StockProduct, Long
     @Query(value = "SELECT p.product_name, o.outlet_name, s.current_quantity, s.minimum_stock_level, s.maximum_stock_level, s.stock_id FROM tb_products as p CROSS JOIN tb_outlets as o LEFT JOIN tb_stocks s ON p.product_id = s.product_id AND o.outlet_id = s.outlet_id ORDER BY outlet_name;", nativeQuery = true)
     List<String[]> findAllStocksUnitItem();
 
+    @Query("SELECT s FROM StockProduct s WHERE s.product.productId = :productId AND s.outlet.outletId = :outletId")
+    StockProduct findStockByProductAndOutlet(Long productId, Long outletId);
+
 }

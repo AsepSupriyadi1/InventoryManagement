@@ -45,8 +45,9 @@ public class Product {
 
 
     @JsonIgnore
-    @OneToOne(mappedBy = "product")
-    private StockProduct stockProduct;
+    @OneToMany(mappedBy = "product")
+    private List<StockProduct> stockProducts;
+
 
     // -=-=-=-=-=-=-=-=-= DEPENDECIES -=-=-=-=-=-=-=-=-=-=-=-=-=-=
     @ManyToOne

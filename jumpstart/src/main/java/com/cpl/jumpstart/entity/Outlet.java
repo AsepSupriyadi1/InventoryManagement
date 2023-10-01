@@ -47,11 +47,15 @@ public class Outlet {
     private List<Customer> customerList;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "outlet")
-    private StockProduct stockProduct;
+    @OneToMany(mappedBy = "outlet")
+    private List<StockProduct> stockProducts;
 
     @JsonIgnore
     @OneToMany(mappedBy = "outlet")
     private List<Purchases> purchases;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "outlet")
+    private List<CustomerTransaction> customerTransactions;
 
 }

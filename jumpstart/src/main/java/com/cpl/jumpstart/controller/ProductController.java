@@ -98,6 +98,9 @@ public class ProductController {
 
             Product product = productServices.findProductById(productId);
 
+            System.out.println(categoryId);
+            System.out.println(supplierId);
+
 
             // CATEGORY RELATION
             if(categoryId.equals("null")){
@@ -117,7 +120,6 @@ public class ProductController {
                 );
                 product.setSupplier(supplier);
             }
-
 
 
             // PRODUCT DETAILS

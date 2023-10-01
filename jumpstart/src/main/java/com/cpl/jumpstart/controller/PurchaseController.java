@@ -39,12 +39,6 @@ public class PurchaseController {
     private PurchaseServices purchaseServices;
 
 
-    @GetMapping("/all-product-level")
-    public ResponseEntity<List<Product>> getAllStockLevelProduct() {
-        List<Product> listLevelProduct = productServices.findAllProductWithStockLevel();
-        return ResponseEntity.ok(listLevelProduct);
-    }
-
 
     @GetMapping
     public ResponseEntity<List<Purchases>> getAllPurchases() {
@@ -91,6 +85,8 @@ public class PurchaseController {
                 case "MINIMUM_ERROR" -> messageResponse.setMessage("Quantity at least must align with Stock Level !");
                 case "GREATER_ERROR" -> messageResponse.setMessage("Quantity exceed Stock level regulations");
                 case "MAX_ERROR" -> messageResponse.setMessage("Total stock is still in safe condition ");
+                case "ZERO_VALUE" -> messageResponse.setMessage("Quantiy can't be zero !");
+                case "NO_ITEMS" -> messageResponse.setMessage("Bill should have at least one Item !");
                 default -> {
                     messageResponse.setMessage("Error Occured");
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(messageResponse);

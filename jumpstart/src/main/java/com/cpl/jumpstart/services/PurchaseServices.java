@@ -1,6 +1,7 @@
 package com.cpl.jumpstart.services;
 
 
+import com.cpl.jumpstart.dto.request.ProductPurchasesDto;
 import com.cpl.jumpstart.dto.request.PurchaseDto;
 import com.cpl.jumpstart.dto.response.BillsInfoDto;
 import com.cpl.jumpstart.entity.*;
@@ -11,10 +12,7 @@ import com.cpl.jumpstart.repositories.StockProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PurchaseServices {
@@ -50,10 +48,10 @@ public class PurchaseServices {
 
         Purchases purchases = new Purchases();
         UserApp staff = userAppServices.getCurrentUser();
-
+        Outlet outlet;
 
         try {
-            Outlet outlet = outletService.findById(Long.parseLong(purchaseDto.getOutletId()));
+            outlet = outletService.findById(Long.parseLong(purchaseDto.getOutletId()));
             purchases.setOutlet(outlet);
 
             Supplier supplier = supplierServices.findById(Long.parseLong(purchaseDto.getSupplierId()));
@@ -68,6 +66,11 @@ public class PurchaseServices {
 
         List<ProductPurchases> purchasedProductList = new ArrayList<>();
         double totalAmount = 0;
+
+
+        if(purchaseDto.getListProduct().size() == 0){
+            throw new RuntimeException("NO_ITEMS");
+        }
 
 
         for (ProductPurchasesDto requestProduct : purchaseDto.getListProduct()) {
@@ -85,11 +88,19 @@ public class PurchaseServices {
             productPurchases.setProductId(product.getProductId().toString());
             productPurchases.setPurchases(purchases);
 
-            if(product.getStockProduct() != null){
+            StockProduct productRules = stockProductService.findByProductAndOutlet(product.getProductId(), outlet.getOutletId());
 
-                boolean isMinimumStockLevel = requestProduct.getQuantity() >= product.getStockProduct().getMinimumStockLevel();
-                boolean isGreaterThanMaximum = requestProduct.getQuantity() > product.getStockProduct().getMaximumStockLevel();
-                boolean isMax = requestProduct.getQuantity() + product.getStockProduct().getCurrentQuantity() > product.getStockProduct().getMaximumStockLevel();
+
+            if(requestProduct.getQuantity() == 0){
+                throw new RuntimeException("ZERO_VALUE");
+            }
+
+
+            if(productRules != null){
+
+                boolean isMinimumStockLevel = requestProduct.getQuantity() >= productRules.getMinimumStockLevel();
+                boolean isGreaterThanMaximum = requestProduct.getQuantity() > productRules.getMaximumStockLevel();
+                boolean isMax = requestProduct.getQuantity() + productRules.getCurrentQuantity() > productRules.getMaximumStockLevel();
 
 
                 if (!isMinimumStockLevel) {
@@ -176,12 +187,20 @@ public class PurchaseServices {
         List<StockProduct> stockProductList = new ArrayList<>();
         for(ProductPurchases productPurchases : purchases.getProductPurchasesList()){
             Product product = productServices.findProductById(Long.parseLong(productPurchases.getProductId()));
-            StockProduct stockProduct = stockProductService.findByOutletAndProduct(purchases.getOutlet(), product);
-            stockProduct.setCurrentQuantity(productPurchases.getQuantity());
-            stockProductList.add(stockProduct);
+            Optional<StockProduct> stockProduct = stockProductService.findByOutletAndProduct(purchases.getOutlet(), product);
+
+            if(stockProduct.isEmpty()){
+                StockProduct newStock = new StockProduct();
+                newStock.setCurrentQuantity(productPurchases.getQuantity());
+                newStock.setProduct(product);
+                newStock.setOutlet(outlet);
+                stockProductRepo.save(newStock);
+            } else {
+                stockProduct.get().setCurrentQuantity(productPurchases.getQuantity());
+                stockProductList.add(stockProduct.get());
+            }
         }
         stockProductRepo.saveAll(stockProductList);
-
         purchases.setPurchasesStatus(PurchasesStatus.COMPLETED);
         purchases.setReceiveDate(new Date());
 

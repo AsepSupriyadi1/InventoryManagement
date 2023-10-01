@@ -13,9 +13,6 @@ import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query("SELECT u FROM Product u LEFT JOIN u.stockProduct o WHERE o IS NOT NULL")
-    List<Product> findAllProductWithStockLevel();
-
     @Query("SELECT u FROM Product u WHERE u.supplier.supplierId = :supplierId")
     List<Product> findAllByProductBySupplier(Long supplierId);
 
