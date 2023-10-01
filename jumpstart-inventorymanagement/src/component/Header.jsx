@@ -80,7 +80,7 @@ const Header = () => {
               )}
 
               <Nav.Link>
-                <Link to="/all-customer" className="link-light text-secondary">
+                <Link to="/all-customers" className="link-light text-secondary">
                   Customer
                 </Link>
               </Nav.Link>

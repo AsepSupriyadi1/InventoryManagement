@@ -62,6 +62,11 @@ public class UserController {
         currentUser.setAddress(userApp.getAddress());
         currentUser.setPhoneNumber(userApp.getPhoneNumber());
         currentUser.setRole(userApp.getUserRole().name());
+
+        if(userApp.getUserRole().equals(UserAppRole.STORE_ADMIN)){
+            currentUser.setOutletId(String.valueOf(userApp.getOutlet().getOutletId()));
+        }
+
         return ResponseEntity.ok(currentUser);
     }
 

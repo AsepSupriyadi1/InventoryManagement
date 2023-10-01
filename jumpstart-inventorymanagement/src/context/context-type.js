@@ -5,6 +5,7 @@ export const user_type = {
   address: "",
   userRole: "",
   phoneNumber: "",
+  outletId: "",
 };
 
 // USER CONTEXT

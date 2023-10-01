@@ -21,6 +21,8 @@ import AllStok from "./pages/Product/Stock/AllStocks";
 import AllBills from "./pages/Bill/AllBills";
 import AddBills from "./pages/Bill/AddBills";
 import Bayar from "./component/Bayar";
+import AllCustomers from "./pages/Customers/AllCustomers";
+import AddNewCustomers from "./pages/Customers/AddNewCustomers";
 function App() {
   const { isLoggedIn, currentUser } = useContext(AuthContext);
 
@@ -63,6 +65,10 @@ function App() {
             <Route path="/all-products" element={<AllProducts />} />
             <Route path="/add-products" element={<AddProduct />} />
             <Route path="/detail-product/:productId" element={<DetailsProduct />} />
+
+            {/* CUSTOMERS ROUTES */}
+            <Route path="/all-customers" element={<AllCustomers />} />
+            <Route path="/add-customers" element={<AddNewCustomers />} />
 
             <Route path="/all-categories" element={<AllCategory />} />
 

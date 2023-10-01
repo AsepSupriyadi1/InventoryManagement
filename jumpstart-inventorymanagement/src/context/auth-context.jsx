@@ -33,6 +33,7 @@ export function AuthContextProvider(props) {
       getUserLoginAPI(token)
         .then((res) => {
           setUser(res.data);
+          console.log(res.data);
         })
         .catch((err) => {
           console.log("Token error");
@@ -62,6 +63,7 @@ export function AuthContextProvider(props) {
       address: user.address,
       userRole: user.role,
       phoneNumber: user.phoneNumber,
+      outletId: user.outletId,
     },
     token: token,
     isLoggedIn: userIsLoggedIn,

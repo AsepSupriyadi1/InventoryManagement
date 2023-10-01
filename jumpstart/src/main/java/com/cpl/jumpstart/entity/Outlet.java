@@ -37,6 +37,8 @@ public class Outlet {
 
     private boolean isOutletActive;
 
+    private double totalRevenue;
+
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)

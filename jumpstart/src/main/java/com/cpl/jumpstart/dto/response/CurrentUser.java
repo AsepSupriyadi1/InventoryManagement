@@ -18,5 +18,6 @@ public class CurrentUser {
     private String address;
     private String phoneNumber;
     private String role;
+    private String outletId;
 
 }
