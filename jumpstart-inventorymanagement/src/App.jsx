@@ -38,6 +38,7 @@ function App() {
         {isLoggedIn && (
           <>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<UserProfile />} />
 
             {/* USER ROUTES */}
             {currentUser.userRole === "SUPER_ADMIN" && (
@@ -49,17 +50,15 @@ function App() {
                 <Route path="/all-outlets" element={<AllOutlet />} />
                 <Route path="/add-outlet" element={<AddOutlet />} />
                 <Route path="/detail-outlet/:outletId" element={<DetailOutlet />} />
-
-                {/* STOCKS ADMIN */}
-                <Route path="/all-stocks" element={<AllStok />} />
-
-                {/* PURCHASES ADMIN */}
-                <Route path="/all-purchases" element={<AllBills />} />
-                <Route path="/add-bills" element={<AddBills />} />
               </>
             )}
 
-            <Route path="/profile" element={<UserProfile />} />
+            {/* STOCKS */}
+            <Route path="/all-stocks" element={<AllStok />} />
+
+            {/* PURCHASES */}
+            <Route path="/all-purchases" element={<AllBills />} />
+            <Route path="/add-bills" element={<AddBills />} />
 
             {/* PRODUCT ROUTES */}
             <Route path="/all-products" element={<AllProducts />} />

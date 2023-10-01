@@ -103,7 +103,14 @@ public class StockProductService {
     }
 
 
+    public List<String[]> findAllStockLevelByOutlets(Long outletId){
+        try {
+            return stockProductRepo.findAllStocksUnitItemByOutlets(outletId);
+        } catch (Exception e){
+            throw new RuntimeException("Outlet not found !");
+        }
 
+    }
 
 
 

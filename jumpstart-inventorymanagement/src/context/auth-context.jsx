@@ -22,6 +22,7 @@ export function AuthContextProvider(props) {
 
   const [token, setToken] = useState(initialToken);
   const [user, setUser] = useState(user_type);
+  const [isLoading, setIsLoading] = useState(true); // Tambahkan isLoading
 
   const userIsLoggedIn = !!token;
 
@@ -29,16 +30,28 @@ export function AuthContextProvider(props) {
   useEffect(() => {
     if (token === null) {
       setUser(user_type);
+      setIsLoading(false); // Set isLoading menjadi false ketika selesai
     } else {
       getUserLoginAPI(token)
         .then((res) => {
-          setUser(res.data);
+          let data = res.data;
+          setUser({
+            userId: data.userId,
+            fullName: data.fullName,
+            email: data.email,
+            address: data.address,
+            userRole: data.role,
+            phoneNumber: data.phoneNumber,
+            outletId: data.outletId,
+          });
           console.log(res.data);
+          setIsLoading(false); // Set isLoading menjadi false ketika selesai
         })
         .catch((err) => {
           console.log("Token error");
           localStorage.removeItem("token");
           window.location.href = "/login";
+          setIsLoading(false); // Set isLoading menjadi false ketika selesai
         });
     }
 
@@ -56,17 +69,10 @@ export function AuthContextProvider(props) {
   }
 
   let contextValue = {
-    currentUser: {
-      userId: user.userId,
-      fullName: user.fullName,
-      email: user.email,
-      address: user.address,
-      userRole: user.role,
-      phoneNumber: user.phoneNumber,
-      outletId: user.outletId,
-    },
+    currentUser: user,
     token: token,
     isLoggedIn: userIsLoggedIn,
+    isLoading: isLoading, // Tambahkan isLoading ke dalam konteks
     login: loginHandler,
     logout: logoutHandler,
   };

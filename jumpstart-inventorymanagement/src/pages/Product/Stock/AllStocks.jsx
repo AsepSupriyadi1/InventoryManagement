@@ -5,16 +5,16 @@ import { AuthContext } from "../../../context/auth-context";
 import { Badge, Button, Modal } from "react-bootstrap";
 import { errorAlert, errorReturnConfAlert, successConfAlert, successReturnConfAlert } from "../../../alert/sweetAlert";
 import Swal from "sweetalert2";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { faPencil, faSearch, faShop } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { addOrUpdateStocksLevelAPI, getAllStocksLevelAPI } from "../../../api/stocks";
+import { addOrUpdateStocksLevelAPI, getAllStocksLevelAPI, getAllStocksLevelByOutletAPI } from "../../../api/stocks";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { getAllOutlets } from "../../../api/outlet";
 
 const AllStok = () => {
-  const { token } = useContext(AuthContext);
+  const { isLoading, currentUser, token } = useContext(AuthContext);
   const [addCategoryModal, setAddShow] = useState(false);
   const [updateCategoryModal, setUpdateShow] = useState(false);
 
@@ -60,7 +60,6 @@ const AllStok = () => {
         alert("Error Occured");
         console.log(err);
       });
-
     getAllOutlets(token)
       .then((response) => {
         setListStores(response.data);
@@ -81,14 +80,29 @@ const AllStok = () => {
   };
 
   useEffect(() => {
-    if (selectedOutlet !== "reset") {
-      let data = filterByOutlet(selectedOutlet);
-      setFilteredStockLevel(data);
-    } else if (selectedOutlet === "reset") {
-      setFilteredStockLevel(null);
-      getAllStocksLevel();
+    if (!isLoading) {
+      if (currentUser.userRole == "STORE_ADMIN") {
+        getAllStocksLevelByOutletAPI(token, currentUser.outletId)
+          .then((response) => {
+            let responseData = response.data;
+            console.log(responseData);
+            setListStocksLevel(responseData);
+          })
+          .catch((err) => {
+            alert("Error Occured");
+            console.log(err);
+          });
+      } else {
+        if (selectedOutlet !== "reset") {
+          let data = filterByOutlet(selectedOutlet);
+          setFilteredStockLevel(data);
+        } else if (selectedOutlet === "reset") {
+          getAllStocksLevel();
+          setFilteredStockLevel(null);
+        }
+      }
     }
-  }, [selectedOutlet]);
+  }, [isLoading, selectedOutlet]);
 
   const handleStockLevelDetails = (stockId, outletName, productName, minQuantity, maxQuantity) => {
     const stockLevelsDetailData = {
@@ -139,77 +153,88 @@ const AllStok = () => {
       <Layout>
         <DashHeading data={metaPageData}></DashHeading>
 
-        <div className="d-flex justify-content-between my-4">
-          <div style={{ minWidth: "100px" }}>
-            <select name="outletNameField" id="outletNameField" className="form-control" value={selectedOutlet} onChange={handleOutletFieldFilterChange}>
-              <option value="reset">-- choose outlet --</option>
-              {listStores !== null &&
-                listStores.map((value, index) => (
-                  <>
-                    <option value={value.outletName}>{value.outletName}</option>
-                  </>
-                ))}
-            </select>
-          </div>
-        </div>
+        <div className="my-5"></div>
 
-        {filteredSrockLevel !== null && (
+        {currentUser.userRole == "SUPER_ADMIN" && (
           <>
-            <div className="row min-scroll">
-              <DataTable value={filteredSrockLevel} dataKey="categoryId" tableStyle={{ minWidth: "50rem", maxHeight: "100px", overflowY: "hidden" }}>
-                <Column field="productName" header="Product Name"></Column>
-                <Column field="currentQuantity" header="Quantity On Hand"></Column>
-                <Column field="minStockLevelQuantity" header="Minimum Stock Level"></Column>
-                <Column field="maxStockLevelQuantity" header="Maximum Stock Level"></Column>
-                <Column field="outletName" header="Outlet Name"></Column>
-                <Column
-                  header="Stock Status"
-                  body={(rowData) => (
-                    <>
-                      <div className="text-center">
-                        {rowData.minStockLevelQuantity == 0 && rowData.maxStockLevelQuantity == 0 && (
-                          <>
-                            <Badge bg="secondary">unset</Badge>
-                          </>
-                        )}
-
-                        {rowData.minStockLevelQuantity != 0 && rowData.maxStockLevelQuantity != 0 && (
-                          <>
-                            {rowData.currentQuantity >= rowData.minStockLevelQuantity && rowData.currentQuantity <= rowData.maxStockLevelQuantity && (
-                              <>
-                                <Badge bg="success">normal</Badge>
-                              </>
-                            )}
-                            {rowData.currentQuantity == 0 && (
-                              <>
-                                <Badge bg="danger">out of stock</Badge>
-                              </>
-                            )}
-                            {rowData.currentQuantity > rowData.maxStockLevelQuantity && (
-                              <>
-                                <Badge bg="danger">stock exceeded</Badge>
-                              </>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </>
-                  )}
-                ></Column>
-                <Column
-                  header="actions"
-                  body={(rowData) => (
-                    <>
-                      <div className="text-center">
-                        <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.stocksId, rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
-                          <FontAwesomeIcon icon={faPencil} /> Set Stocks Level
-                        </button>
-                      </div>
-                    </>
-                  )}
-                ></Column>
-              </DataTable>
+            <div className="d-flex justify-content-between my-4">
+              <div style={{ minWidth: "100px" }}>
+                <select name="outletNameField" id="outletNameField" className="form-control" value={selectedOutlet} onChange={handleOutletFieldFilterChange}>
+                  <option value="reset">-- choose outlet --</option>
+                  {listStores !== null &&
+                    listStores.map((value, index) => (
+                      <>
+                        <option value={value.outletName}>{value.outletName}</option>
+                      </>
+                    ))}
+                </select>
+              </div>
             </div>
+          </>
+        )}
+
+        {currentUser.userRole == "SUPER_ADMIN" && (
+          <>
+            {filteredSrockLevel !== null && (
+              <>
+                <div className="row min-scroll">
+                  <DataTable value={filteredSrockLevel} dataKey="categoryId" tableStyle={{ minWidth: "100rem", maxHeight: "100px", overflowY: "hidden" }}>
+                    <Column field="productName" header="Product Name"></Column>
+                    <Column field="currentQuantity" header="Quantity On Hand"></Column>
+                    <Column field="minStockLevelQuantity" header="Minimum Stock Level"></Column>
+                    <Column field="maxStockLevelQuantity" header="Maximum Stock Level"></Column>
+                    <Column field="outletName" header="Outlet Name"></Column>
+                    <Column
+                      header="Stock Status"
+                      body={(rowData) => (
+                        <>
+                          <div className="text-center">
+                            {rowData.minStockLevelQuantity == 0 && rowData.maxStockLevelQuantity == 0 && (
+                              <>
+                                <Badge bg="secondary">unset</Badge>
+                              </>
+                            )}
+
+                            {rowData.minStockLevelQuantity != 0 && rowData.maxStockLevelQuantity != 0 && (
+                              <>
+                                {rowData.currentQuantity >= rowData.minStockLevelQuantity && rowData.currentQuantity <= rowData.maxStockLevelQuantity && (
+                                  <>
+                                    <Badge bg="success">normal</Badge>
+                                  </>
+                                )}
+                                {rowData.currentQuantity == 0 && (
+                                  <>
+                                    <Badge bg="danger">out of stock</Badge>
+                                  </>
+                                )}
+                                {rowData.currentQuantity > rowData.maxStockLevelQuantity && (
+                                  <>
+                                    <Badge bg="danger">stock exceeded</Badge>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    ></Column>
+
+                    <Column
+                      header="actions"
+                      body={(rowData) => (
+                        <>
+                          <div className="text-center">
+                            <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.stocksId, rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
+                              <FontAwesomeIcon icon={faPencil} /> Set Stocks Level
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    ></Column>
+                  </DataTable>
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -255,18 +280,23 @@ const AllStok = () => {
                   </>
                 )}
               ></Column>
-              <Column
-                header="actions"
-                body={(rowData) => (
-                  <>
-                    <div className="text-center">
-                      <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.stocksId, rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
-                        <FontAwesomeIcon icon={faPencil} /> Set Stocks Level
-                      </button>
-                    </div>
-                  </>
-                )}
-              ></Column>
+
+              {currentUser.userRole == "SUPER_ADMIN" && (
+                <>
+                  <Column
+                    header="actions"
+                    body={(rowData) => (
+                      <>
+                        <div className="text-center">
+                          <button className="btn btn-primary" onClick={() => handleStockLevelDetails(rowData.stocksId, rowData.outletName, rowData.productName, rowData.minStockLevelQuantity, rowData.maxStockLevelQuantity)}>
+                            <FontAwesomeIcon icon={faPencil} /> Set Stocks Level
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  ></Column>
+                </>
+              )}
             </DataTable>
           </div>
         )}

@@ -80,6 +80,12 @@ const Header = () => {
               )}
 
               <Nav.Link>
+                <Link to="/all-stocks" className="link-light text-secondary">
+                  Stocks
+                </Link>
+              </Nav.Link>
+
+              <Nav.Link>
                 <Link to="/all-customers" className="link-light text-secondary">
                   Customer
                 </Link>

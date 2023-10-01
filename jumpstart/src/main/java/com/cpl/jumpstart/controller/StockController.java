@@ -96,6 +96,37 @@ public class StockController {
         return ResponseEntity.ok(returnList);
     }
 
+    @GetMapping("/all-outlet-stock-level/{outletId}")
+    public ResponseEntity<List<StocksModel>> getAllOutletStockLevel(
+            @PathVariable(name = "outletId") Long outletId
+    ) {
+
+        List<String[]> stockProductList = new ArrayList<>();
+
+        try {
+            stockProductList = stockProductService.findAllStockLevelByOutlets(outletId);
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(null);
+        }
+
+        List<StocksModel> returnList = new ArrayList<>();
+
+        for (String[] strings : stockProductList) {
+
+            StocksModel stocksModel = new StocksModel();
+            stocksModel.setProductName(strings[0]);
+            stocksModel.setOutletName(strings[1]);
+            stocksModel.setCurrentQuantity(strings[2] != null ? Integer.parseInt(strings[2]) : 0);
+            stocksModel.setMinStockLevelQuantity(strings[3] != null ? Integer.parseInt(strings[3]) : 0);
+            stocksModel.setMaxStockLevelQuantity(strings[4] != null ? Integer.parseInt(strings[4]) : 0);
+            stocksModel.setStocksId(strings[5] != null ? strings[5] : "undefined");
+            returnList.add(stocksModel);
+        }
+
+        return ResponseEntity.ok(returnList);
+    }
+
 
     @DeleteMapping("/delete/{stockId}")
     public ResponseEntity<MessageResponse> deleteStockStrategy(@PathVariable(name = "stockId") Long stockId) {

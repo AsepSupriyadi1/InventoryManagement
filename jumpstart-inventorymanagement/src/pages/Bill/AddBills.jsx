@@ -17,7 +17,7 @@ import { findAllBySupplierIdAPI } from "../../api/product";
 import { addNewBillsAPI, confirmPurchasesAPI } from "../../api/purchases";
 
 const AddBills = () => {
-  const { token } = useContext(AuthContext);
+  const { token, currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // -=-=-=-==-=-=-=--=  MODALS CONFIG -=-=-=-==-=-=-=-=-=--=
@@ -224,7 +224,10 @@ const AddBills = () => {
         let data = response.data;
 
         setListOutlet(response.data);
-        if (data.length > 0) {
+
+        if (currentUser.userRole == "STORE_ADMIN") {
+          setOutletCond(currentUser.outletId);
+        } else if (data.length > 0) {
           setOutletCond(data[0].outletId);
         }
       })
@@ -302,33 +305,37 @@ const AddBills = () => {
         </Modal.Header>
         <form onSubmit={handleSubmitConf}>
           <Modal.Body>
-            <div class="mb-3">
-              <label for="outletId" class="form-label">
-                Outlet
-              </label>
-              {listOutlet !== null && listOutlet.length > 0 ? (
-                <>
-                  <select name="outletId" id="outletId" className="form-control" value={outletConf} onChange={(e) => setOutletCond(e.target.value)}>
-                    {listOutlet.map((value, index) => (
-                      <>
-                        <option key={value.outletId} value={value.outletId}>
-                          {value.outletName}
-                        </option>
-                      </>
-                    ))}
-                  </select>
-                </>
-              ) : (
-                <>
-                  <small>
-                    No Outlets available,
-                    <Link to="../all-outlets" className="ps-2">
-                      All Outlets
-                    </Link>
-                  </small>
-                </>
-              )}
-            </div>
+            {currentUser.userRole != "STORE_ADMIN" && (
+              <>
+                <div class="mb-3">
+                  <label for="outletId" class="form-label">
+                    Outlet
+                  </label>
+                  {listOutlet !== null && listOutlet.length > 0 ? (
+                    <>
+                      <select name="outletId" id="outletId" className="form-control" value={outletConf} onChange={(e) => setOutletCond(e.target.value)}>
+                        {listOutlet.map((value, index) => (
+                          <>
+                            <option key={value.outletId} value={value.outletId}>
+                              {value.outletName}
+                            </option>
+                          </>
+                        ))}
+                      </select>
+                    </>
+                  ) : (
+                    <>
+                      <small>
+                        No Outlets available,
+                        <Link to="../all-outlets" className="ps-2">
+                          All Outlets
+                        </Link>
+                      </small>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
 
             <div class="mb-3">
               <label for="supplierId" class="form-label">
