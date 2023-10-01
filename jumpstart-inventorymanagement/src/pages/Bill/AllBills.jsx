@@ -10,18 +10,21 @@ import { deleteSupplierAPI, getAllSupplierAPI } from "../../api/supplier";
 import { AuthContext } from "../../context/auth-context";
 import { returnConfirm, successReturnConfAlert } from "../../alert/sweetAlert";
 import Swal from "sweetalert2";
-import { getAllDetailsItem, getAllPurchasesAPI, getPurchasesDetailsAPI, receiveGoodsAPI } from "../../api/purchases";
+import { approveBillsAPI, getAllDetailsItem, getAllPurchasesAPI, getPurchasesDetailsAPI, makePaymentAPI, receiveGoodsAPI } from "../../api/purchases";
 import { Button, ListGroup, Modal } from "react-bootstrap";
 import Bayar from "../../component/Bayar";
 
 const AllBills = () => {
-  const { token } = useContext(AuthContext);
+  const { token, currentUser, isLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   const [products, setProducts] = useState(null);
   const [purchaseDetails, setPurchaseDetails] = useState(null);
   const [itemsDetails, setItemsDetails] = useState(null);
   const [listPurchases, setListPurchases] = useState(null);
   const [arrivedConfirmModals, setArrivedConfirmModal] = useState(false);
+
+  // -=-=-=-=-= ARRIVED STATE -=-=-=-=-=-=-=--=-=
+  const [arrivedDateInputs, setArrivedDateInputs] = useState(null);
 
   const metaPageData = {
     title: "All Purchases",
@@ -42,8 +45,10 @@ const AllBills = () => {
   };
 
   useEffect(() => {
-    getAllPurchases();
-  }, []);
+    if (!isLoading) {
+      getAllPurchases();
+    }
+  }, [isLoading]);
 
   const handleShowPurchaseDetailsModals = (purchaseId) => {
     getPurchasesDetailsAPI(token, purchaseId)
@@ -68,10 +73,46 @@ const AllBills = () => {
     setArrivedConfirmModal(true);
   };
 
-  const handleReceiveGoods = (purchaseId) => {
-    receiveGoodsAPI(token, purchaseId)
+  const handleApproveBills = (purchaseId) => {
+    let data = new FormData();
+    data.append("purchaseId", purchaseId);
+
+    approveBillsAPI(token, data)
       .then(() => {
-        successReturnConfAlert("Success", "Bills status updated !").then(() => {
+        successReturnConfAlert("Approved !", "Bills has approved by admin ").then(() => {
+          getAllPurchases();
+          setArrivedConfirmModal(false);
+        });
+      })
+      .catch((err) => {
+        alert("error occured ! ");
+      });
+  };
+
+  const handleReceiveGoods = (e, purchaseId) => {
+    e.preventDefault();
+
+    let data = {
+      purchaseId: purchaseId,
+      arrivedDate: arrivedDateInputs,
+    };
+
+    receiveGoodsAPI(token, data)
+      .then(() => {
+        successReturnConfAlert("Success !", "Stock has been updated !").then(() => {
+          getAllPurchases();
+          setArrivedConfirmModal(false);
+        });
+      })
+      .catch((err) => {
+        alert("error occured ! ");
+      });
+  };
+
+  const handlePayBills = (purchaseId) => {
+    makePaymentAPI(token, purchaseId)
+      .then(() => {
+        successReturnConfAlert("Success", "Bills payed successfully !").then(() => {
           getAllPurchases();
           setArrivedConfirmModal(false);
         });
@@ -84,13 +125,11 @@ const AllBills = () => {
   const actionsSupplierBody = (purchasesStatus, purchaseId) => {
     return (
       <>
-        {purchasesStatus === "PENDING" && (
-          <div className="text-center">
-            <button className="btn btn-primary" onClick={() => handleShowPurchaseDetailsModals(purchaseId)}>
-              <FontAwesomeIcon icon={faTruck} /> Is Arrived ?
-            </button>
-          </div>
-        )}
+        <div className="text-center">
+          <button className="btn btn-primary" onClick={() => handleShowPurchaseDetailsModals(purchaseId)}>
+            <FontAwesomeIcon icon={faTruck} /> Details
+          </button>
+        </div>
       </>
     );
   };
@@ -121,7 +160,7 @@ const AllBills = () => {
         <>
           <Modal show={arrivedConfirmModals} size="lg" onHide={() => setArrivedConfirmModal(false)}>
             <Modal.Header closeButton>
-              <Modal.Title>Update Amount</Modal.Title>
+              <Modal.Title>Detail Bills</Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
@@ -162,8 +201,65 @@ const AllBills = () => {
                   <ListGroup.Item>
                     Total Amount : <b>${purchaseDetails.totalAmount}</b>
                   </ListGroup.Item>
+                  {purchaseDetails.purchasesStatus === "ARRIVED" && (
+                    <>
+                      <ListGroup.Item>Arrived at : {purchaseDetails.receivedDate}</ListGroup.Item>
+                    </>
+                  )}
+                  <ListGroup.Item>Status : {purchaseDetails.purchasesStatus}</ListGroup.Item>
+                  {purchaseDetails.purchasesStatus === "PENDING" && (
+                    <>
+                      <ListGroup.Item>Status info : Waiting for admin approval</ListGroup.Item>
+                    </>
+                  )}
+                  {purchaseDetails.purchasesStatus === "APPROVED" && (
+                    <>
+                      <ListGroup.Item>Status info : Wait for the goods to arrive at the outlet</ListGroup.Item>
+                    </>
+                  )}
+                  {purchaseDetails.purchasesStatus === "ARRIVED" && (
+                    <>
+                      <ListGroup.Item>Status info : Waiting for admin to make payment</ListGroup.Item>
+                    </>
+                  )}
                 </ListGroup>
               </div>
+
+              {currentUser.userRole == "STORE_ADMIN" && (
+                <>
+                  {purchaseDetails.purchasesStatus == "APPROVED" && (
+                    <>
+                      <div className="my-3">
+                        <h3 className="mb-3">Inputs</h3>
+
+                        <form onSubmit={(e) => handleReceiveGoods(e, purchaseDetails.purchasesId)} method="POST">
+                          <div className="mb-3">
+                            <label htmlFor="arrivedDateInputs" className="form-label">
+                              Arrived at ?
+                            </label>
+                            <input type="date" name="arrivedDateInputs" id="arrivedDateInputs" className="form-control" value={arrivedDateInputs} onChange={(e) => setArrivedDateInputs(e.target.value)} required />
+                          </div>
+
+                          <button className="btn btn-success w-100">Submit</button>
+                        </form>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {currentUser.userRole == "SUPER_ADMIN" && (
+                <>
+                  {purchaseDetails.purchasesStatus == "ARRIVED" && (
+                    <>
+                      <div className="my-3">
+                        <h3 className="mb-3">Make a payment</h3>
+                        <Bayar totalPrice={purchaseDetails.totalAmount} purchaseId={purchaseDetails.purchasesId} handleReceive={() => handlePayBills(purchaseDetails.purchasesId)}></Bayar>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
             </Modal.Body>
 
             <Modal.Footer>
@@ -171,11 +267,17 @@ const AllBills = () => {
                 Close
               </Button>
 
-              {/* <Button variant="primary" onClick={() => handleReceiveGoods(purchaseDetails.purchasesId)}>
-                Receive Product ?
-              </Button> */}
-
-              <Bayar totalPrice={purchaseDetails.totalAmount} purchaseId={purchaseDetails.purchasesId} handleReceive={() => handleReceiveGoods(purchaseDetails.purchasesId)}></Bayar>
+              {currentUser.userRole == "SUPER_ADMIN" && (
+                <>
+                  {purchaseDetails.purchasesStatus == "PENDING" && (
+                    <>
+                      <Button variant="success" onClick={() => handleApproveBills(purchaseDetails.purchasesId)}>
+                        Approve Bills
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
             </Modal.Footer>
           </Modal>
         </>

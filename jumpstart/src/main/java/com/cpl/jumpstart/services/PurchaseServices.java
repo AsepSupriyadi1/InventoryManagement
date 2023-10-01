@@ -6,12 +6,14 @@ import com.cpl.jumpstart.dto.request.PurchaseDto;
 import com.cpl.jumpstart.dto.response.BillsInfoDto;
 import com.cpl.jumpstart.entity.*;
 import com.cpl.jumpstart.entity.constraint.PurchasesStatus;
+import com.cpl.jumpstart.repositories.OutletRepository;
 import com.cpl.jumpstart.repositories.ProductPurchasesRepository;
 import com.cpl.jumpstart.repositories.PurchasesRepository;
 import com.cpl.jumpstart.repositories.StockProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -32,6 +34,9 @@ public class PurchaseServices {
 
     @Autowired
     private OutletService outletService;
+
+    @Autowired
+    private OutletRepository outletRepository;
 
     @Autowired
     private StockProductService stockProductService;
@@ -133,7 +138,11 @@ public class PurchaseServices {
 
         // PURCHASES DETAIL
         purchases.setTotalAmount(totalAmount);
-        purchases.setDateTime(new Date());
+
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        purchases.setDateTime(format.format(new Date()));
+
         purchases.setPurchasesStatus(PurchasesStatus.PENDING);
 
         Long puchaseCode = getLastSavedPurchasesId();
@@ -149,7 +158,7 @@ public class PurchaseServices {
 
 
 
-    public void approveBills(BillsInfoDto billsInfoDto){
+    public void saveBills(BillsInfoDto billsInfoDto){
         purchasesRepo.save(billsInfoDto.getPurchases());
 
         for(ProductPurchases productPurchases : billsInfoDto.getPurchasesList()){
@@ -163,6 +172,43 @@ public class PurchaseServices {
 
     }
 
+    public void approveBills(String purchaseId){
+        UserApp userApp = userAppServices.getCurrentUser();
+        Purchases purchases = findPurchaseById(Long.parseLong(purchaseId));
+        purchases.setPurchasesStatus(PurchasesStatus.APPROVED);
+        purchases.setApprovedBy(userApp.getStaffCode());
+        purchasesRepo.save(purchases);
+    }
+
+    public void goodsArrived(String purchaseId, Date dateArrived){
+        Purchases purchases = findPurchaseById(Long.parseLong(purchaseId));
+        Outlet outlet = purchases.getOutlet();
+
+
+        for(ProductPurchases productPurchases : purchases.getProductPurchasesList()){
+            Product product = productServices.findProductById(Long.parseLong(productPurchases.getProductId()));
+            Optional<StockProduct> stockProduct = stockProductRepo.findByOutletAndProduct(outlet, product);
+
+            if(stockProduct.isEmpty()){
+                StockProduct newStock = new StockProduct();
+                newStock.setCurrentQuantity(productPurchases.getQuantity());
+                newStock.setProduct(product);
+                newStock.setOutlet(outlet);
+                stockProductRepo.save(newStock);
+                System.out.println("Empty");
+            } else {
+                int plusQuantity = stockProduct.get().getCurrentQuantity() + productPurchases.getQuantity();
+                stockProduct.get().setCurrentQuantity(plusQuantity);
+                stockProductRepo.save(stockProduct.get());
+            }
+        }
+
+        purchases.setPurchasesStatus(PurchasesStatus.ARRIVED);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        purchases.setReceivedDate(format.format(dateArrived));
+        purchasesRepo.save(purchases);
+    }
+
 
     public Purchases findPurchaseById(Long purchaseId){
 
@@ -173,39 +219,18 @@ public class PurchaseServices {
     }
 
 
-    public void receiveProduct(Long purchaseId){
+    public void makePayment(Long purchaseId){
         Purchases purchases = findPurchaseById(purchaseId);
-
-        if(purchases.getPurchasesStatus().equals(PurchasesStatus.COMPLETED)){
-            throw new RuntimeException("COMPLETED");
-        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        purchases.setPayedAt(format.format(new Date()));
+        purchases.setPurchasesStatus(PurchasesStatus.COMPLETED);
 
         Outlet outlet = purchases.getOutlet();
-        System.out.println(outlet.getOutletName());
-
-
-        List<StockProduct> stockProductList = new ArrayList<>();
-        for(ProductPurchases productPurchases : purchases.getProductPurchasesList()){
-            Product product = productServices.findProductById(Long.parseLong(productPurchases.getProductId()));
-            Optional<StockProduct> stockProduct = stockProductService.findByOutletAndProduct(purchases.getOutlet(), product);
-
-            if(stockProduct.isEmpty()){
-                StockProduct newStock = new StockProduct();
-                newStock.setCurrentQuantity(productPurchases.getQuantity());
-                newStock.setProduct(product);
-                newStock.setOutlet(outlet);
-                stockProductRepo.save(newStock);
-            } else {
-                stockProduct.get().setCurrentQuantity(productPurchases.getQuantity());
-                stockProductList.add(stockProduct.get());
-            }
-        }
-        stockProductRepo.saveAll(stockProductList);
-        purchases.setPurchasesStatus(PurchasesStatus.COMPLETED);
-        purchases.setReceiveDate(new Date());
+        double totalExpenses = outlet.getTotalExpenses() + purchases.getTotalAmount();
+        outlet.setTotalExpenses(totalExpenses);
+        outletRepository.save(outlet);
 
         purchasesRepo.save(purchases);
-
     }
 
     public Long getLastSavedPurchasesId() {

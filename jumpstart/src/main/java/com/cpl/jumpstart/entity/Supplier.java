@@ -40,6 +40,7 @@ public class Supplier {
     @Column(nullable = false)
     private String email;
 
+
     @JsonIgnore
     @OneToMany(mappedBy = "supplier")
     private List<Product> products;

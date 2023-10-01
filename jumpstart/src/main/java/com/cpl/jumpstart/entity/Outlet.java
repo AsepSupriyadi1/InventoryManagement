@@ -38,6 +38,7 @@ public class Outlet {
     private boolean isOutletActive;
 
     private double totalRevenue;
+    private double totalExpenses;
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)

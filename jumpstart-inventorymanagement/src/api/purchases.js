@@ -16,7 +16,7 @@ export const addNewBillsAPI = async (token, data) => {
 };
 
 export const confirmPurchasesAPI = async (token, data) => {
-  return await axios.post(`${BASE_URL}/purchase/approve`, data, {
+  return await axios.post(`${BASE_URL}/purchase/save-bills`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
@@ -33,8 +33,20 @@ export const getAllDetailsItem = async (token, purchaseId) => {
   });
 };
 
-export const receiveGoodsAPI = async (token, purchaseId) => {
-  return await axios.get(`${BASE_URL}/purchase/update/` + purchaseId, {
+export const approveBillsAPI = async (token, data) => {
+  return await axios.post(`${BASE_URL}/purchase/approve`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const receiveGoodsAPI = async (token, data) => {
+  return await axios.post(`${BASE_URL}/purchase/arrived`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const makePaymentAPI = async (token, purchaseId) => {
+  return await axios.get(`${BASE_URL}/purchase/pay/` + purchaseId, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };

@@ -34,14 +34,16 @@ public class Purchases {
     private String purchaseCode;
 
     @Column(nullable = false)
-    private Date dateTime;
-
-    private Date receiveDate;
+    private String dateTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PurchasesStatus purchasesStatus;
 
+    // OTHERS
+    private String approvedBy;
+    private String receivedDate;
+    private String payedAt;
 
     // -=-=-=-=-=- SUPPLIER DETAILS -=-=-=-=-=-=-=
     @Column(nullable = false)

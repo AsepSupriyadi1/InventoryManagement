@@ -2,6 +2,7 @@ package com.cpl.jumpstart.controller;
 
 
 import com.cpl.jumpstart.dto.request.PurchaseDto;
+import com.cpl.jumpstart.dto.request.StockArrivedDto;
 import com.cpl.jumpstart.dto.response.BillsInfoDto;
 import com.cpl.jumpstart.dto.response.MessageResponse;
 import com.cpl.jumpstart.entity.*;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -101,12 +103,12 @@ public class PurchaseController {
 
 
 
-    @PostMapping("/approve")
-    public ResponseEntity<MessageResponse> approveBills(
+    @PostMapping("/save-bills")
+    public ResponseEntity<MessageResponse> saveBills(
             @RequestBody BillsInfoDto billsInfoDto
     ) {
         try {
-            purchaseServices.approveBills(billsInfoDto);
+            purchaseServices.saveBills(billsInfoDto);
             return ResponseEntity.ok(new MessageResponse("Purchases Sucessfully added"));
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -115,14 +117,43 @@ public class PurchaseController {
     }
 
 
-    @GetMapping("/update/{purchaseId}")
-    public ResponseEntity<MessageResponse> receiveProduct(
+    @PostMapping("/approve")
+    public ResponseEntity<MessageResponse> approveBills(
+            @RequestParam(name = "purchaseId") String purchaseId
+    ) {
+        try {
+            purchaseServices.approveBills(purchaseId);
+            return ResponseEntity.ok(new MessageResponse("Purchases approved successfully"));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Purchases failed to approve !"));
+        }
+    }
+
+    @PostMapping("/arrived")
+    public ResponseEntity<MessageResponse> goodsArrive(
+            @RequestBody StockArrivedDto stockArrivedDto
+    ) {
+
+            purchaseServices.goodsArrived(stockArrivedDto.getPurchaseId(), stockArrivedDto.getArrivedDate());
+            return ResponseEntity.ok(new MessageResponse("Purchases arrived successfully"));
+
+
+//        catch (Exception e) {
+//            System.out.println(e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Purchases arrived successfully !"));
+//        }
+    }
+
+
+    @GetMapping("/pay/{purchaseId}")
+    public ResponseEntity<MessageResponse> makePayment(
             @PathVariable(name = "purchaseId") Long purchaseId
     ) {
 
         try {
-            purchaseServices.receiveProduct(purchaseId);
-            return ResponseEntity.ok(new MessageResponse("Purchase added successfully !"));
+            purchaseServices.makePayment(purchaseId);
+            return ResponseEntity.ok(new MessageResponse("Payed successfully !"));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             MessageResponse messageResponse = new MessageResponse();
