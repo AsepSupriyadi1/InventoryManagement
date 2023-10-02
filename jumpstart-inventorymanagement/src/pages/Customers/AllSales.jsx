@@ -13,6 +13,7 @@ import Swal from "sweetalert2";
 import { approveBillsAPI, getAllDetailsItem, getAllPurchasesAPI, getPurchasesDetailsAPI, makePaymentAPI, receiveGoodsAPI } from "../../api/purchases";
 import { Button, ListGroup, Modal } from "react-bootstrap";
 import Bayar from "../../component/Bayar";
+import { getAllTransactionAPI } from "../../api/transaction";
 
 const AllSales = () => {
   const { token, currentUser, isLoading } = useContext(AuthContext);
@@ -20,7 +21,7 @@ const AllSales = () => {
   const [products, setProducts] = useState(null);
   const [purchaseDetails, setPurchaseDetails] = useState(null);
   const [itemsDetails, setItemsDetails] = useState(null);
-  const [listPurchases, setListPurchases] = useState(null);
+  const [listTransaction, setListTransaction] = useState(null);
   const [arrivedConfirmModals, setArrivedConfirmModal] = useState(false);
 
   // -=-=-=-=-= ARRIVED STATE -=-=-=-=-=-=-=--=-=
@@ -34,9 +35,9 @@ const AllSales = () => {
   };
 
   const getAllTransaction = () => {
-    getAllPurchasesAPI(token)
+    getAllTransactionAPI(token)
       .then((response) => {
-        setListPurchases(response.data);
+        setListTransaction(response.data);
       })
       .catch((err) => {
         alert("error occured");
@@ -45,7 +46,7 @@ const AllSales = () => {
   };
 
   useEffect(() => {
-    getAllPurchases();
+    getAllTransaction();
   }, []);
 
   // const handleShowPurchaseDetailsModals = (purchaseId) => {
@@ -120,38 +121,38 @@ const AllSales = () => {
   //     });
   // };
 
-  // const actionsSupplierBody = (purchasesStatus, purchaseId) => {
-  //   return (
-  //     <>
-  //       <div className="text-center">
-  //         <button className="btn btn-primary" onClick={() => handleShowPurchaseDetailsModals(purchaseId)}>
-  //           <FontAwesomeIcon icon={faTruck} /> Details
-  //         </button>
-  //       </div>
-  //     </>
-  //   );
-  // };
+  const actionsSupplierBody = (purchasesStatus, purchaseId) => {
+    return (
+      <>
+        <div className="text-center">
+          <button className="btn btn-primary" onClick={() => handleShowPurchaseDetailsModals(purchaseId)}>
+            <FontAwesomeIcon icon={faTruck} /> Details
+          </button>
+        </div>
+      </>
+    );
+  };
 
   return (
     <>
       <Layout>
         <DashHeading data={metaPageData} />
         <div className="d-flex justify-content-between my-4">
-          <Link to={"/add-sales"}>
+          <Link to={"/add-transaction"}>
             <button className="btn btn-primary">
               Add New Transaction <FontAwesomeIcon icon={faDollar} />
             </button>
           </Link>
         </div>
 
-        {/* <DataTable value={listPurchases} tableStyle={{ minWidth: "50rem" }}>
+        <DataTable value={listTransaction} tableStyle={{ minWidth: "50rem" }}>
           <Column field="purchaseCode" header="Bills Code"></Column>
           <Column field="staffCode" header="Staff"></Column>
           <Column field="supplierCode" header="Supplier"></Column>
           <Column field="dateTime" header="Date Created"></Column>
           <Column field="purchasesStatus" header="Status"></Column>
           <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.purchasesStatus, rowData.purchasesId)}></Column>
-        </DataTable> */}
+        </DataTable>
       </Layout>
 
       {/* {purchaseDetails !== null && (

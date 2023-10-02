@@ -70,8 +70,8 @@ function App() {
             {/* CUSTOMERS ROUTES */}
             <Route path="/all-customers" element={<AllCustomers />} />
             <Route path="/add-customers" element={<AddNewCustomers />} />
-            <Route path="/all-sales" element={<AllSales />} />
-            <Route path="/add-sales" element={<AddSales />} />
+            <Route path="/all-transactions" element={<AllSales />} />
+            <Route path="/add-transaction" element={<AddSales />} />
 
             <Route path="/all-categories" element={<AllCategory />} />
 

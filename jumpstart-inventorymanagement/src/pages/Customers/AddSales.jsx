@@ -13,8 +13,10 @@ import { getAllSupplierAPI } from "../../api/supplier";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { findAllBySupplierIdAPI } from "../../api/product";
+import { findAllBySupplierIdAPI, getAllProductAPI } from "../../api/product";
 import { addNewBillsAPI, confirmPurchasesAPI } from "../../api/purchases";
+import { getAllCustomersAPI } from "../../api/customer";
+import { addNewTransactionAPI } from "../../api/transaction";
 
 const AddSales = () => {
   const { token, currentUser } = useContext(AuthContext);
@@ -24,22 +26,22 @@ const AddSales = () => {
   const [configModal, setConfigModal] = useState(true);
   const [addItemsModal, setAddItemsModal] = useState(false);
   const [updateItemsModal, setUpdateItemsModal] = useState(false);
-  const [confirmBillsModal, setConfirmBillsModal] = useState(false);
+  const [transactionDetailModal, setTransactionDetailsModal] = useState(false);
   const [cache, setCache] = useState(null);
   // --=-=-=-=-=--=-=-=- END OF MODALS CONFIG -=-=-=-=-=-=-==
 
   // -=-=-=-=-=-=-= CONFIG STATE --=-=-=-=-=-=-=
   const [config, setConfig] = useState({
-    supplier: null,
+    customer: null,
     outlet: null,
   });
   const [outletConf, setOutletCond] = useState(null);
-  const [supplierConf, setSupplierConf] = useState(null);
-  const [billsConfirmDetails, setBillsConfirmDetails] = useState(null);
+  const [customerConf, setCustomerConf] = useState(null);
+  const [transactionDetail, setTransactionDetails] = useState(null);
   // -=-=-=-=-=-=-= END OF CONFIG STATE --=-=-=-=-=-=-=
 
   // -=-=-=-=-=-=-=-= LIST UNTUK CONFIG _=-=-=-=-
-  const [listSupplier, setListSupplier] = useState(null);
+  const [listCustomers, setListCustomers] = useState(null);
   const [listOutlet, setListOutlet] = useState(null);
   //  -=-=-=-=-=-=-= =-=-=-= LIST UNTUK CONFIG -=-=-=-==-=-
 
@@ -53,19 +55,19 @@ const AddSales = () => {
 
   const [itemsCount, setItemsCount] = useState(1);
   const [listItems, setListItems] = useState([]);
-  const [listSupplierProduct, setListSupplierProduct] = useState([]);
+  const [listProduct, setListProduct] = useState([]);
 
   const [updatedAmount, setUpdatedAmount] = useState(null);
   const [updatedItemsId, setUpdatedItemsId] = useState(null);
 
-  const getAllListProductSupplier = () => {
-    findAllBySupplierIdAPI(token, config.supplier.supplierId)
+  const getAllListProduct = () => {
+    getAllProductAPI(token)
       .then((response) => {
         if (response.data.length === 0) {
-          errorReturnConfAlert("Failed !", "This supplier doesn't have any product to supply yet !");
-          return navigate("../all-purchases");
+          errorReturnConfAlert("Failed !", "Product Is Empty  !");
+          return navigate("../all-products");
         }
-        setListSupplierProduct(response.data);
+        setListProduct(response.data);
         console.log(response.data);
       })
       .catch((err) => {
@@ -74,9 +76,8 @@ const AddSales = () => {
   };
 
   const handleShowAddItemsModal = () => {
-    console.log(config.supplier.supplierId);
     setItems({
-      productId: listSupplierProduct[0].productId,
+      productId: listProduct[0].productId,
     });
     setAddItemsModal(true);
   };
@@ -99,7 +100,7 @@ const AddSales = () => {
     }
 
     addIndex();
-    const product = listSupplierProduct.find((value) => value.productId == items.productId);
+    const product = listProduct.find((value) => value.productId == items.productId);
 
     let newDataItems = {
       itemsId: itemsCount,
@@ -109,7 +110,6 @@ const AddSales = () => {
     };
 
     deleteOption();
-
     setListItems([...listItems, newDataItems]);
     setItems({
       itemsId: 0,
@@ -122,13 +122,13 @@ const AddSales = () => {
   };
 
   const deleteOption = () => {
-    let deleteOption = listSupplierProduct.filter((item) => item.productId != items.productId);
-    setListSupplierProduct(deleteOption);
+    let deleteOption = listProduct.filter((item) => item.productId != items.productId);
+    setListProduct(deleteOption);
   };
 
   const addMoreOption = (itemsId) => {
-    findAllBySupplierIdAPI(token, config.supplier.supplierId).then((response) => {
-      setListSupplierProduct([...listSupplierProduct, response.data.filter((item) => item.productId == itemsId)[0]]);
+    getAllProductAPI(token).then((response) => {
+      setListProduct([...listProduct, response.data.filter((item) => item.productId == itemsId)[0]]);
     });
   };
 
@@ -161,24 +161,31 @@ const AddSales = () => {
   //   -=-=-=-=-=-=-=-=-=-=-=- ITEMS STATE -=-=-=-=-=-=-=-=-=-=-=
 
   const metaPageData = {
-    title: "Add New Bills",
-    href: "all-purchases",
-    header: ["purchases ", " / add new bills"],
+    title: "Add New Transactions",
+    href: "all-transactions",
+    header: ["transaction ", " / add new transaction"],
     icon: faDollar,
   };
 
   const handleSubmitConf = async (e) => {
     e.preventDefault();
 
-    if (outletConf === null || supplierConf === null) {
+    if (outletConf === null || customerConf === null) {
       errorReturnConfAlert("Failed", "You have to identify both constraints !");
       return navigate("../all-purchases");
     }
 
-    const selectedSupplier = listSupplier.filter((value) => value.supplierId == supplierConf)[0];
+    const selectedCustomers = listCustomers.filter((value) => value.customerId == customerConf)[0];
     const selectedOutlets = listOutlet.filter((value) => value.outletId == outletConf)[0];
 
-    setBothConfig(selectedSupplier, selectedOutlets);
+    setBothConfig(selectedCustomers, selectedOutlets);
+  };
+
+  const setBothConfig = (selectedCustomers, selectedOutlets) => {
+    setConfig({
+      customer: selectedCustomers,
+      outlet: selectedOutlets,
+    });
   };
 
   const isFirstRender = useRef(true);
@@ -191,27 +198,19 @@ const AddSales = () => {
 
     console.log(config.outlet, config.supplier);
 
-    if (config.outlet !== null && config.supplier !== null) {
+    if (config.outlet !== null && config.outlet !== null) {
       setConfigModal(false);
-      getAllListProductSupplier();
+      getAllListProduct();
     }
   }, [config]);
 
-  const setBothConfig = (selectedSupplier, selectedOutlets) => {
-    setConfig({
-      supplier: selectedSupplier,
-      outlet: selectedOutlets,
-    });
-  };
-
   useEffect(() => {
-    getAllSupplierAPI(token)
+    getAllCustomersAPI(token)
       .then((response) => {
         let data = response.data;
-
-        setListSupplier(response.data);
+        setListCustomers(data);
         if (data.length > 0) {
-          setSupplierConf(data[0].supplierId);
+          setCustomerConf(data[0].customerId);
         }
       })
       .catch((err) => {
@@ -222,8 +221,7 @@ const AddSales = () => {
     getAllOutlets(token)
       .then((response) => {
         let data = response.data;
-
-        setListOutlet(response.data);
+        setListOutlet(data);
 
         if (currentUser.userRole == "STORE_ADMIN") {
           setOutletCond(currentUser.outletId);
@@ -237,7 +235,7 @@ const AddSales = () => {
       });
   }, []);
 
-  const actionsSupplierBody = (productId) => {
+  const actionBody = (productId) => {
     return (
       <>
         <div className="text-center">
@@ -264,18 +262,18 @@ const AddSales = () => {
     });
 
     let data = {
-      supplierId: config.supplier.supplierId,
-      listProduct: purchaseItems,
+      customerId: config.customer.customerId,
+      productDtoList: purchaseItems,
       outletId: config.outlet.outletId,
     };
 
     console.log(data);
 
-    addNewBillsAPI(token, data)
+    addNewTransactionAPI(token, data)
       .then((response) => {
         console.log(response.data);
-        setBillsConfirmDetails(response.data);
-        setConfirmBillsModal(true);
+        setTransactionDetails(response.data);
+        setTransactionDetailsModal(true);
       })
       .catch((err) => {
         let statusError = err.response.data.message;
@@ -284,16 +282,16 @@ const AddSales = () => {
   };
 
   const handleConfirmsBill = () => {
-    confirmPurchasesAPI(token, billsConfirmDetails).then((response) => {
-      successReturnConfAlert("Success", "Successfully Add new Bills")
-        .then(() => {
-          navigate("../all-purchases");
-        })
-        .catch((err) => {
-          alert("Error Occured !");
-          console.log(err);
-        });
-    });
+    // confirmPurchasesAPI(token, transactionDetail).then((response) => {
+    //   successReturnConfAlert("Success", "Successfully Add new Bills")
+    //     .then(() => {
+    //       navigate("../all-purchases");
+    //     })
+    //     .catch((err) => {
+    //       alert("Error Occured !");
+    //       console.log(err);
+    //     });
+    // });
   };
 
   return (
@@ -301,7 +299,7 @@ const AddSales = () => {
       {/* CONFIG MODAL  */}
       <Modal show={configModal} onHide={() => navigate("../all-purchases")}>
         <Modal.Header closeButton>
-          <Modal.Title>Choose Outlet & Supplier</Modal.Title>
+          <Modal.Title>Choose Outlet & Customers</Modal.Title>
         </Modal.Header>
         <form onSubmit={handleSubmitConf}>
           <Modal.Body>
@@ -338,16 +336,16 @@ const AddSales = () => {
             )}
 
             <div class="mb-3">
-              <label for="supplierId" class="form-label">
+              <label for="customerId" class="form-label">
                 Supplier
               </label>
-              {listSupplier !== null && listSupplier.length > 0 ? (
+              {listCustomers !== null && listCustomers.length > 0 ? (
                 <>
-                  <select name="supplierId" id="supplierId" className="form-control" value={supplierConf} onChange={(e) => setSupplierConf(e.target.value)}>
-                    {listSupplier.map((value, index) => (
+                  <select name="customerId" id="customerId" className="form-control" value={customerConf} onChange={(e) => setCustomerConf(e.target.value)}>
+                    {listCustomers.map((value, index) => (
                       <>
-                        <option key={value.supplierId} value={value.supplierId}>
-                          {value.companyName}
+                        <option key={value.customerId} value={value.customerId}>
+                          {value.customerFullName}
                         </option>
                       </>
                     ))}
@@ -356,9 +354,9 @@ const AddSales = () => {
               ) : (
                 <>
                   <small>
-                    No Supplier available,
-                    <Link to="../all-suppliers" className="ps-2">
-                      All Suppliers
+                    No Customer available,
+                    <Link to="../all-customers" className="ps-2">
+                      All Customers
                     </Link>
                   </small>
                 </>
@@ -366,7 +364,7 @@ const AddSales = () => {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => navigate("../all-purchases")}>
+            <Button variant="secondary" onClick={() => navigate("../all-transactions")}>
               Close
             </Button>
             <Button variant="primary" type="submit">
@@ -379,7 +377,7 @@ const AddSales = () => {
 
       {/* LAYOUT  */}
       <Layout>
-        {config.outlet !== null && config.supplier !== null && listSupplierProduct !== null && (
+        {config.outlet !== null && config.customer !== null && listProduct !== null && (
           <>
             <DashHeading data={metaPageData} />
 
@@ -387,9 +385,9 @@ const AddSales = () => {
               <div className="col-lg-3">
                 <table className="table">
                   <tr>
-                    <td>Supplier</td>
+                    <td>Customer</td>
                     <td className="px-2">:</td>
-                    <td>{config.supplier.supplierName}</td>
+                    <td>{config.customer.customerFullName}</td>
                   </tr>
                   <tr>
                     <td>Outlet</td>
@@ -399,7 +397,7 @@ const AddSales = () => {
                 </table>
               </div>
 
-              {listSupplierProduct !== null && listSupplierProduct.length != 0 && (
+              {listProduct !== null && listProduct.length != 0 && (
                 <>
                   <button className="btn btn-primary" onClick={handleShowAddItemsModal}>
                     Add New Items <FontAwesomeIcon icon={faPlus} />
@@ -414,7 +412,7 @@ const AddSales = () => {
                 {/* <Column header="Product Name" body={(rowData) => getNameItems(rowData.productId)}></Column> */}
                 <Column field="amount" header="Amount"></Column>
                 <Column field="productName" header="Product Name"></Column>
-                <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.itemsId)}></Column>
+                <Column header="actions" body={(rowData) => actionBody(rowData.itemsId)}></Column>
               </DataTable>
             </div>
 
@@ -439,10 +437,10 @@ const AddSales = () => {
               <label for="productId" class="form-label">
                 Product
               </label>
-              {listSupplierProduct !== null && listSupplierProduct.length > 0 ? (
+              {listProduct !== null && listProduct.length > 0 ? (
                 <>
                   <select name="productId" id="productId" className="form-control" value={items.productId} onChange={handleItemsChange}>
-                    {listSupplierProduct.map((value, index) => (
+                    {listProduct.map((value, index) => (
                       <>
                         <option key={value.productId} value={value.productId}>
                           {value.productName}
@@ -511,11 +509,11 @@ const AddSales = () => {
 
       {/* CONFIRM MODAL */}
 
-      {billsConfirmDetails !== null && (
+      {transactionDetail !== null && (
         <>
-          <Modal show={confirmBillsModal} size="lg" onHide={() => setConfirmBillsModal(false)}>
+          <Modal show={transactionDetailModal} size="lg" onHide={() => setTransactionDetailsModal(false)}>
             <Modal.Header closeButton>
-              <Modal.Title>Update Amount</Modal.Title>
+              <Modal.Title>Transaction Details</Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
@@ -526,24 +524,24 @@ const AddSales = () => {
               <div className="my-3">
                 <h3 className="mb-3">Outlet Info</h3>
                 <ListGroup>
-                  <ListGroup.Item>Outlet Name : {billsConfirmDetails.purchases.outlet.outletName}</ListGroup.Item>
-                  <ListGroup.Item>Outlet Code : {billsConfirmDetails.purchases.outlet.outletCode}</ListGroup.Item>
-                  <ListGroup.Item>Outlet Address : {billsConfirmDetails.purchases.outlet.outletAddress}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Name : {transactionDetail.transaction.outlet.outletName}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Code : {transactionDetail.transaction.outlet.outletCode}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Address : {transactionDetail.transaction.outlet.outletAddress}</ListGroup.Item>
                 </ListGroup>
               </div>
 
               <div className="my-3">
-                <h3 className="mb-3">Supplier Info</h3>
+                <h3 className="mb-3">Customer Info</h3>
                 <ListGroup>
-                  <ListGroup.Item>Supplier Name : {billsConfirmDetails.purchases.supplierName}</ListGroup.Item>
-                  <ListGroup.Item>Supplier Code : {billsConfirmDetails.purchases.supplierCode}</ListGroup.Item>
+                  <ListGroup.Item>Customer Name : {transactionDetail.transaction.customerFullName}</ListGroup.Item>
+                  <ListGroup.Item>Customer Code : {transactionDetail.transaction.customerCode}</ListGroup.Item>
                 </ListGroup>
               </div>
 
               <div className="my-5">
                 <h3 className="mb-3">Items Info</h3>
                 <div className="row min-scroll">
-                  <DataTable value={billsConfirmDetails.purchasesList} tableStyle={{ minWidth: "50rem" }}>
+                  <DataTable value={transactionDetail.purchasesList} tableStyle={{ minWidth: "50rem" }}>
                     <Column field="productName" header="Product Name"></Column>
                     <Column field="quantity" header="Amount"></Column>
                   </DataTable>
@@ -554,13 +552,13 @@ const AddSales = () => {
                 <h3 className="mb-3">Bills Info</h3>
                 <ListGroup>
                   <ListGroup.Item>
-                    Total Amount : <b>${billsConfirmDetails.purchases.totalAmount}</b>
+                    Total Amount : <b>${transactionDetail.transaction.totalAmount}</b>
                   </ListGroup.Item>
                 </ListGroup>
               </div>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={() => setConfirmBillsModal(false)}>
+              <Button variant="secondary" onClick={() => setTransactionDetailsModal(false)}>
                 Close
               </Button>
               <button className="btn btn-primary" type="submit" onClick={handleConfirmsBill}>
@@ -570,7 +568,6 @@ const AddSales = () => {
           </Modal>
         </>
       )}
-
       {/* END CONFIRM MODAL */}
     </>
   );
