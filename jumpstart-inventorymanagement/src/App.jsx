@@ -25,6 +25,7 @@ import AllCustomers from "./pages/Customers/AllCustomers";
 import AddNewCustomers from "./pages/Customers/AddNewCustomers";
 import AllSales from "./pages/Customers/AllSales";
 import AddSales from "./pages/Customers/AddSales";
+import DetailTransaction from "./pages/Customers/DetailsTransaction";
 function App() {
   const { isLoggedIn, currentUser } = useContext(AuthContext);
 
@@ -35,16 +36,18 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<ErrorPage />} />
         <Route path="/bayar" element={<Bayar />} />
+        <Route path="/payment" element={<DetailTransaction />} />
 
         {/* LOGIN REQUIRED */}
         {isLoggedIn && (
           <>
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<UserProfile />} />
 
             {/* USER ROUTES */}
             {currentUser.userRole === "SUPER_ADMIN" && (
               <>
+                <Route path="/dashboard" element={<Dashboard />} />
+
                 <Route path="/all-users" element={<AllUser />} />
                 <Route path="/add-user" element={<AddUser />} />
 
@@ -52,6 +55,11 @@ function App() {
                 <Route path="/all-outlets" element={<AllOutlet />} />
                 <Route path="/add-outlet" element={<AddOutlet />} />
                 <Route path="/detail-outlet/:outletId" element={<DetailOutlet />} />
+
+                {/* PRODUCT ROUTES */}
+                <Route path="/all-products" element={<AllProducts />} />
+                <Route path="/add-products" element={<AddProduct />} />
+                <Route path="/detail-product/:productId" element={<DetailsProduct />} />
               </>
             )}
 
@@ -61,11 +69,6 @@ function App() {
             {/* PURCHASES */}
             <Route path="/all-purchases" element={<AllBills />} />
             <Route path="/add-bills" element={<AddBills />} />
-
-            {/* PRODUCT ROUTES */}
-            <Route path="/all-products" element={<AllProducts />} />
-            <Route path="/add-products" element={<AddProduct />} />
-            <Route path="/detail-product/:productId" element={<DetailsProduct />} />
 
             {/* CUSTOMERS ROUTES */}
             <Route path="/all-customers" element={<AllCustomers />} />

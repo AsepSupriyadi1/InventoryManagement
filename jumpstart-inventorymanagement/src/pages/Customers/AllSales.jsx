@@ -13,19 +13,20 @@ import Swal from "sweetalert2";
 import { approveBillsAPI, getAllDetailsItem, getAllPurchasesAPI, getPurchasesDetailsAPI, makePaymentAPI, receiveGoodsAPI } from "../../api/purchases";
 import { Button, ListGroup, Modal } from "react-bootstrap";
 import Bayar from "../../component/Bayar";
-import { getAllTransactionAPI } from "../../api/transaction";
+import { deliveryTransactionAPI, getAllTransactionAPI, getTransactionDetailsAPI, getTransactionItemsAPI, processTransactionAPI } from "../../api/transaction";
 
 const AllSales = () => {
   const { token, currentUser, isLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   const [products, setProducts] = useState(null);
-  const [purchaseDetails, setPurchaseDetails] = useState(null);
+  const [transactionDetails, setTransactionDetails] = useState(null);
   const [itemsDetails, setItemsDetails] = useState(null);
   const [listTransaction, setListTransaction] = useState(null);
   const [arrivedConfirmModals, setArrivedConfirmModal] = useState(false);
 
   // -=-=-=-=-= ARRIVED STATE -=-=-=-=-=-=-=--=-=
-  const [arrivedDateInputs, setArrivedDateInputs] = useState(null);
+  const [deliverInputs, setDeliverInputs] = useState(null);
+  const [componentLoading, setComponentLoading] = useState(false);
 
   const metaPageData = {
     title: "All Transaction",
@@ -49,83 +50,74 @@ const AllSales = () => {
     getAllTransaction();
   }, []);
 
-  // const handleShowPurchaseDetailsModals = (purchaseId) => {
-  //   getPurchasesDetailsAPI(token, purchaseId)
-  //     .then((response) => {
-  //       setPurchaseDetails(response.data);
-  //     })
-  //     .catch((err) => {
-  //       alert("errror occured");
-  //       console.log(err);
-  //     });
+  const handleShowTransactionDetailsModals = (transactionId) => {
+    getTransactionDetailsAPI(token, transactionId)
+      .then((response) => {
+        setTransactionDetails(response.data);
+      })
+      .catch((err) => {
+        alert("errror occured");
+        console.log(err);
+      });
 
-  //   getAllDetailsItem(token, purchaseId)
-  //     .then((response) => {
-  //       setItemsDetails(response.data);
-  //       console.log(response.data);
-  //     })
-  //     .catch((err) => {
-  //       alert("errror occured");
-  //       console.log(err);
-  //     });
+    getTransactionItemsAPI(token, transactionId)
+      .then((response) => {
+        setItemsDetails(response.data);
+        console.log(response.data);
+      })
+      .catch((err) => {
+        alert("errror occured");
+        console.log(err);
+      });
 
-  //   setArrivedConfirmModal(true);
-  // };
+    setArrivedConfirmModal(true);
+  };
 
-  // const handleApproveBills = (purchaseId) => {
-  //   let data = new FormData();
-  //   data.append("purchaseId", purchaseId);
+  const handleProsessTransaction = (transactionId) => {
+    setComponentLoading(true);
+    setArrivedConfirmModal(false);
+    processTransactionAPI(token, transactionId)
+      .then(() => {
+        setComponentLoading(false);
+        successReturnConfAlert("Process !", "Transaction proceed by outlet ").then(() => {
+          getAllTransaction();
+        });
+      })
+      .catch((err) => {
+        setComponentLoading(false);
+        alert("error occured ! ");
+      });
+  };
 
-  //   approveBillsAPI(token, data)
-  //     .then(() => {
-  //       successReturnConfAlert("Approved !", "Bills has approved by admin ").then(() => {
-  //         getAllPurchases();
-  //         setArrivedConfirmModal(false);
-  //       });
-  //     })
-  //     .catch((err) => {
-  //       alert("error occured ! ");
-  //     });
-  // };
+  const handleDeliveryProduct = (e, purchaseId) => {
+    e.preventDefault();
 
-  // const handleReceiveGoods = (e, purchaseId) => {
-  //   e.preventDefault();
+    let data = {
+      transactionId: purchaseId,
+      deliveryDate: deliverInputs,
+    };
 
-  //   let data = {
-  //     purchaseId: purchaseId,
-  //     arrivedDate: arrivedDateInputs,
-  //   };
+    console.log(data);
+    setComponentLoading(true);
+    setArrivedConfirmModal(false);
+    deliveryTransactionAPI(token, data)
+      .then(() => {
+        setComponentLoading(false);
+        successReturnConfAlert("Success !", "Product start to deliver !").then(() => {
+          getAllTransaction();
+        });
+      })
+      .catch((err) => {
+        setComponentLoading(false);
+        alert("error occured ! ");
+      });
+  };
 
-  //   receiveGoodsAPI(token, data)
-  //     .then(() => {
-  //       successReturnConfAlert("Success !", "Stock has been updated !").then(() => {
-  //         getAllPurchases();
-  //         setArrivedConfirmModal(false);
-  //       });
-  //     })
-  //     .catch((err) => {
-  //       alert("error occured ! ");
-  //     });
-  // };
-
-  // const handlePayBills = (purchaseId) => {
-  //   makePaymentAPI(token, purchaseId)
-  //     .then(() => {
-  //       successReturnConfAlert("Success", "Bills payed successfully !").then(() => {
-  //         getAllPurchases();
-  //         setArrivedConfirmModal(false);
-  //       });
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // };
-
-  const actionsSupplierBody = (purchasesStatus, purchaseId) => {
+  const actionsSupplierBody = (transactionId) => {
     return (
       <>
         <div className="text-center">
-          <button className="btn btn-primary" onClick={() => handleShowPurchaseDetailsModals(purchaseId)}>
+          <button className="btn btn-primary" onClick={() => handleShowTransactionDetailsModals(transactionId)}>
             <FontAwesomeIcon icon={faTruck} /> Details
           </button>
         </div>
@@ -135,31 +127,35 @@ const AllSales = () => {
 
   return (
     <>
-      <Layout>
-        <DashHeading data={metaPageData} />
-        <div className="d-flex justify-content-between my-4">
-          <Link to={"/add-transaction"}>
-            <button className="btn btn-primary">
-              Add New Transaction <FontAwesomeIcon icon={faDollar} />
-            </button>
-          </Link>
-        </div>
+      {!componentLoading && (
+        <>
+          <Layout>
+            <DashHeading data={metaPageData} />
+            <div className="d-flex justify-content-between my-4">
+              <Link to={"/add-transaction"}>
+                <button className="btn btn-primary">
+                  Add New Transaction <FontAwesomeIcon icon={faDollar} />
+                </button>
+              </Link>
+            </div>
 
-        <DataTable value={listTransaction} tableStyle={{ minWidth: "50rem" }}>
-          <Column field="purchaseCode" header="Bills Code"></Column>
-          <Column field="staffCode" header="Staff"></Column>
-          <Column field="supplierCode" header="Supplier"></Column>
-          <Column field="dateTime" header="Date Created"></Column>
-          <Column field="purchasesStatus" header="Status"></Column>
-          <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.purchasesStatus, rowData.purchasesId)}></Column>
-        </DataTable>
-      </Layout>
+            <DataTable value={listTransaction} tableStyle={{ minWidth: "50rem" }}>
+              <Column field="transactionCode" header="Bills Code"></Column>
+              <Column field="staffCode" header="Staff"></Column>
+              <Column field="customerCode" header="Customer"></Column>
+              <Column field="dateTime" header="Date Created"></Column>
+              <Column field="transactionStatus" header="Status"></Column>
+              <Column header="actions" body={(rowData) => actionsSupplierBody(rowData.transactionId)}></Column>
+            </DataTable>
+          </Layout>
+        </>
+      )}
 
-      {/* {purchaseDetails !== null && (
+      {transactionDetails !== null && (
         <>
           <Modal show={arrivedConfirmModals} size="lg" onHide={() => setArrivedConfirmModal(false)}>
             <Modal.Header closeButton>
-              <Modal.Title>Detail Bills</Modal.Title>
+              <Modal.Title>Detail Transaction</Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
@@ -170,17 +166,17 @@ const AllSales = () => {
               <div className="my-3">
                 <h3 className="mb-3">Outlet Info</h3>
                 <ListGroup>
-                  <ListGroup.Item>Outlet Name : {purchaseDetails.outlet.outletName}</ListGroup.Item>
-                  <ListGroup.Item>Outlet Code : {purchaseDetails.outlet.outletCode}</ListGroup.Item>
-                  <ListGroup.Item>Outlet Address : {purchaseDetails.outlet.outletAddress}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Name : {transactionDetails.outlet.outletName}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Code : {transactionDetails.outlet.outletCode}</ListGroup.Item>
+                  <ListGroup.Item>Outlet Address : {transactionDetails.outlet.outletAddress}</ListGroup.Item>
                 </ListGroup>
               </div>
 
               <div className="my-3">
-                <h3 className="mb-3">Supplier Info</h3>
+                <h3 className="mb-3">Customer Info</h3>
                 <ListGroup>
-                  <ListGroup.Item>Supplier Name : {purchaseDetails.supplierName}</ListGroup.Item>
-                  <ListGroup.Item>Supplier Code : {purchaseDetails.supplierCode}</ListGroup.Item>
+                  <ListGroup.Item>Customer Name : {transactionDetails.customerName}</ListGroup.Item>
+                  <ListGroup.Item>Customer Code : {transactionDetails.customerCode}</ListGroup.Item>
                 </ListGroup>
               </div>
 
@@ -198,65 +194,54 @@ const AllSales = () => {
                 <h3 className="mb-3">Bills Info</h3>
                 <ListGroup>
                   <ListGroup.Item>
-                    Total Amount : <b>${purchaseDetails.totalAmount}</b>
+                    Total Amount : <b>${transactionDetails.totalAmount}</b>
                   </ListGroup.Item>
-                  {purchaseDetails.purchasesStatus === "ARRIVED" && (
+                  {transactionDetails.transactionStatus === "DELIVER" && (
                     <>
-                      <ListGroup.Item>Arrived at : {purchaseDetails.receivedDate}</ListGroup.Item>
+                      <ListGroup.Item>Delievered at : {transactionDetails.deliverStartDate}</ListGroup.Item>
                     </>
                   )}
-                  <ListGroup.Item>Status : {purchaseDetails.purchasesStatus}</ListGroup.Item>
-                  {purchaseDetails.purchasesStatus === "PENDING" && (
+                  {transactionDetails.transactionStatus === "COMPLETED" && (
                     <>
-                      <ListGroup.Item>Status info : Waiting for admin approval</ListGroup.Item>
+                      <ListGroup.Item>Received at : {transactionDetails.receiveDate}</ListGroup.Item>
                     </>
                   )}
-                  {purchaseDetails.purchasesStatus === "APPROVED" && (
+                  <ListGroup.Item>Status : {transactionDetails.transactionStatus}</ListGroup.Item>
+
+                  {transactionDetails.transactionStatus === "PROCESS" && (
                     <>
-                      <ListGroup.Item>Status info : Wait for the goods to arrive at the outlet</ListGroup.Item>
+                      <ListGroup.Item>Status info : Wait for the goods to be packed and ready to deliver</ListGroup.Item>
                     </>
                   )}
-                  {purchaseDetails.purchasesStatus === "ARRIVED" && (
+                  {transactionDetails.transactionStatus === "DELIVER" && (
                     <>
-                      <ListGroup.Item>Status info : Waiting for admin to make payment</ListGroup.Item>
+                      <ListGroup.Item>Status info : Wait for the goods to arrived at customer</ListGroup.Item>
+                    </>
+                  )}
+                  {transactionDetails.transactionStatus === "COMPLETED" && (
+                    <>
+                      <ListGroup.Item>Status info : Customer has payed this Transaction</ListGroup.Item>
                     </>
                   )}
                 </ListGroup>
               </div>
 
-              {currentUser.userRole == "STORE_ADMIN" && (
+              {transactionDetails.transactionStatus == "PROCESS" && (
                 <>
-                  {purchaseDetails.purchasesStatus == "APPROVED" && (
-                    <>
-                      <div className="my-3">
-                        <h3 className="mb-3">Inputs</h3>
+                  <div className="my-3">
+                    <h3 className="mb-3">Inputs</h3>
 
-                        <form onSubmit={(e) => handleReceiveGoods(e, purchaseDetails.purchasesId)} method="POST">
-                          <div className="mb-3">
-                            <label htmlFor="arrivedDateInputs" className="form-label">
-                              Arrived at ?
-                            </label>
-                            <input type="date" name="arrivedDateInputs" id="arrivedDateInputs" className="form-control" value={arrivedDateInputs} onChange={(e) => setArrivedDateInputs(e.target.value)} required />
-                          </div>
-
-                          <button className="btn btn-success w-100">Submit</button>
-                        </form>
+                    <form onSubmit={(e) => handleDeliveryProduct(e, transactionDetails.transactionId)} method="POST">
+                      <div className="mb-3">
+                        <label htmlFor="deliverInputs" className="form-label">
+                          Delivery Date
+                        </label>
+                        <input type="date" name="deliverInputs" id="deliverInputs" className="form-control" value={deliverInputs} onChange={(e) => setDeliverInputs(e.target.value)} required />
                       </div>
-                    </>
-                  )}
-                </>
-              )}
 
-              {currentUser.userRole == "SUPER_ADMIN" && (
-                <>
-                  {purchaseDetails.purchasesStatus == "ARRIVED" && (
-                    <>
-                      <div className="my-3">
-                        <h3 className="mb-3">Make a payment</h3>
-                        <Bayar totalPrice={purchaseDetails.totalAmount} purchaseId={purchaseDetails.purchasesId} handleReceive={() => handlePayBills(purchaseDetails.purchasesId)}></Bayar>
-                      </div>
-                    </>
-                  )}
+                      <button className="btn btn-success w-100">Submit</button>
+                    </form>
+                  </div>
                 </>
               )}
             </Modal.Body>
@@ -266,12 +251,12 @@ const AllSales = () => {
                 Close
               </Button>
 
-              {currentUser.userRole == "SUPER_ADMIN" && (
+              {currentUser.userRole == "STORE_ADMIN" && (
                 <>
-                  {purchaseDetails.purchasesStatus == "PENDING" && (
+                  {transactionDetails.transactionStatus == "PENDING" && (
                     <>
-                      <Button variant="success" onClick={() => handleApproveBills(purchaseDetails.purchasesId)}>
-                        Approve Bills
+                      <Button variant="success" onClick={() => handleProsessTransaction(transactionDetails.transactionId)}>
+                        Process Transaction
                       </Button>
                     </>
                   )}
@@ -280,7 +265,7 @@ const AllSales = () => {
             </Modal.Footer>
           </Modal>
         </>
-      )} */}
+      )}
     </>
   );
 };

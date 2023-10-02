@@ -8,14 +8,17 @@ import com.cpl.jumpstart.dto.response.BillsInfoDto;
 import com.cpl.jumpstart.dto.response.TransactionInfoDto;
 import com.cpl.jumpstart.entity.*;
 import com.cpl.jumpstart.entity.constraint.PurchasesStatus;
+import com.cpl.jumpstart.entity.constraint.TransactionStatus;
 import com.cpl.jumpstart.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TransactionService {
@@ -42,8 +45,16 @@ public class TransactionService {
     private CustomerService customerService;
 
     @Autowired
+    private OutletRepository outletRepository;
+
+    @Autowired
     private UserAppServices userAppServices;
 
+    @Autowired
+    private PaymentTokenService paymentTokenService;
+
+    @Autowired
+    private EmailSenderService emailSenderService;
 
 
     public TransactionInfoDto addNewPurchase(
@@ -67,8 +78,6 @@ public class TransactionService {
         } catch (Exception e) {
             throw new RuntimeException("CONSTRAINT_NOT_FOUND");
         }
-
-
 
 
         if(transactionDto.getProductDtoList().size() == 0){
@@ -100,10 +109,13 @@ public class TransactionService {
                 throw new RuntimeException("ZERO_VALUE");
             }
 
-            boolean isExceedQuantity = requestProduct.getQuantity() > productRules.getCurrentQuantity();
-            if(isExceedQuantity) {
-                throw new RuntimeException("EXCEED_QUANTITY");
+            if(productRules != null){
+                boolean isExceedQuantity = requestProduct.getQuantity() > productRules.getCurrentQuantity();
+                if(isExceedQuantity) {
+                    throw new RuntimeException("EXCEED_QUANTITY");
+                }
             }
+
 
             productPurchases.setQuantity(requestProduct.getQuantity());
             purchasedProductList.add(productPurchases);
@@ -123,7 +135,7 @@ public class TransactionService {
 
         // PURCHASES DETAIL
         transaction.setTotalAmount(totalAmount);
-        transaction.setPurchasesStatus(PurchasesStatus.PENDING);
+        transaction.setTransactionStatus(TransactionStatus.PENDING);
 
         Long transactionCode = getLastSavedTransactionId();
         if(transactionCode == null) {
@@ -136,6 +148,73 @@ public class TransactionService {
 
         return new TransactionInfoDto(transaction, purchasedProductList);
     }
+
+
+    public void saveTransaction(TransactionInfoDto transactionInfoDto){
+        transactionRepo.save(transactionInfoDto.getTransaction());
+
+        for(CustomerProductPurchases customerProductPurchases : transactionInfoDto.getPurchasesList()){
+            CustomerProductPurchases items = new CustomerProductPurchases();
+            items.setQuantity(customerProductPurchases.getQuantity());
+            items.setTransaction(transactionInfoDto.getTransaction());
+            items.setProductId(customerProductPurchases.getProductId());
+            items.setProductName(customerProductPurchases.getProductName());
+            transactionProductRepo.save(items);
+        }
+    }
+
+    public void prosesTransaction(Long transactionId){
+        CustomerTransaction transaction = findTransactionById(transactionId);
+        transaction.setTransactionStatus(TransactionStatus.PROCESS);
+        transactionRepo.save(transaction);
+
+
+        String toEmail = "asepsupyad789@gmail.com";
+        String subjectEmail = "Delivery Product - Jumpstart";
+        String bodyEmail = "Your Transaction is proceed by outlet";
+        emailSenderService.sendSimpleEmail(toEmail, bodyEmail, subjectEmail);
+    }
+
+    public void deliverTransaction(Long transactionId, Date deliveryDate){
+        CustomerTransaction transaction = findTransactionById(transactionId);
+        transaction.setTransactionStatus(TransactionStatus.DELIVER);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        transaction.setDeliverStartDate(format.format(deliveryDate));
+        transactionRepo.save(transaction);
+
+
+        PaymentToken paymentToken = new PaymentToken();
+        paymentToken.setTransactionId(transaction.getTransactionId());
+        paymentToken.setToken(UUID.randomUUID().toString());
+        paymentTokenService.saveToken(paymentToken);
+
+        String frontEndURL = "http://localhost:5173"; // front end URL
+        String fullUrl = frontEndURL + "/payment?token=" + paymentToken.getToken();
+
+        String toEmail = "asepsupyad789@gmail.com";
+        String subjectEmail = "Delivery Product - Jumpstart";
+        String bodyEmail = "Your transaction is on delivery, If your product has arrived, please make a payment to complete the processes by going to this URL below \n " + fullUrl;
+
+        emailSenderService.sendSimpleEmail(toEmail, bodyEmail, subjectEmail);
+    }
+
+
+
+    public void makePayment(Long transactionId){
+        CustomerTransaction transaction = findTransactionById(transactionId);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        transaction.setReceiveDate(format.format(new Date()));
+        transaction.setTransactionStatus(TransactionStatus.COMPLETED);
+
+        Outlet outlet = transaction.getOutlet();
+        double totalRevenue = outlet.getTotalRevenue() + transaction.getTotalAmount();
+        outlet.setTotalRevenue(totalRevenue);
+        outletRepository.save(outlet);
+
+        transactionRepo.save(transaction);
+    }
+
 
     public CustomerTransaction findTransactionById(Long transactionId){
         return transactionRepo.findById(transactionId).orElseThrow(

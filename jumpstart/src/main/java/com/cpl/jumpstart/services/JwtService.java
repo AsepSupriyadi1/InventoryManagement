@@ -38,7 +38,6 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
-
     private static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     public String extractUsername(String token){

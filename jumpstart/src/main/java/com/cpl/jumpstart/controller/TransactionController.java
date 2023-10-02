@@ -1,16 +1,16 @@
 package com.cpl.jumpstart.controller;
 
 
+import com.cpl.jumpstart.dto.request.DeliveryDto;
 import com.cpl.jumpstart.dto.request.PurchaseDto;
 import com.cpl.jumpstart.dto.request.TransactionDto;
 import com.cpl.jumpstart.dto.response.BillsInfoDto;
 import com.cpl.jumpstart.dto.response.MessageResponse;
 import com.cpl.jumpstart.dto.response.TransactionInfoDto;
-import com.cpl.jumpstart.entity.CustomerProductPurchases;
-import com.cpl.jumpstart.entity.CustomerTransaction;
-import com.cpl.jumpstart.entity.ProductPurchases;
-import com.cpl.jumpstart.entity.Purchases;
+import com.cpl.jumpstart.entity.*;
 import com.cpl.jumpstart.repositories.CustomerTransactionRepository;
+import com.cpl.jumpstart.services.EmailSenderService;
+import com.cpl.jumpstart.services.PaymentTokenService;
 import com.cpl.jumpstart.services.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +28,12 @@ public class TransactionController {
 
     @Autowired
     private CustomerTransactionRepository transactionRepo;
+
+    @Autowired
+    private EmailSenderService emailSenderService;
+
+    @Autowired
+    private PaymentTokenService paymentTokenService;
 
 
     @GetMapping
@@ -98,6 +104,92 @@ public class TransactionController {
 
     }
 
+    @PostMapping("/save-bills")
+    public ResponseEntity<MessageResponse> saveBills(
+            @RequestBody TransactionInfoDto transactionInfoDto
+    ) {
+        try {
+            transactionService.saveTransaction(transactionInfoDto);
+            return ResponseEntity.ok(new MessageResponse("Transaction Sucessfully added"));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Transaction failed to add !"));
+        }
+    }
+
+
+    @GetMapping("/process/{transactionId}")
+    public ResponseEntity<MessageResponse> processTransaction(
+           @PathVariable(name = "transactionId") Long transactionId
+    ) {
+        try {
+            transactionService.prosesTransaction(transactionId);
+            return ResponseEntity.ok(new MessageResponse("Transaction Sucessfully Proceed"));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Transaction failed to proceed !"));
+        }
+    }
+
+    @PostMapping("/deliver")
+    public ResponseEntity<MessageResponse> deliverTransaction(
+            @RequestBody DeliveryDto deliveryDto
+    ) {
+        try {
+            transactionService.deliverTransaction(Long.parseLong(deliveryDto.getTransactionId()), deliveryDto.getDeliveryDate());
+            return ResponseEntity.ok(new MessageResponse("Transaction Sucessfully Delivered"));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Transaction failed to Delivered !"));
+        }
+    }
+
+
+    @PostMapping("/payment-details")
+    public ResponseEntity<TransactionInfoDto> payTransactionPage(
+           @RequestParam(name = "paymentToken") String paymentToken
+    ) {
+
+        try {
+            PaymentToken payment = paymentTokenService.findByToken(paymentToken);
+
+            CustomerTransaction customerTransaction = transactionService.findTransactionById(payment.getTransactionId());
+            TransactionInfoDto transactionInfoDto = new TransactionInfoDto();
+            transactionInfoDto.setTransaction(customerTransaction);
+            transactionInfoDto.setPurchasesList(customerTransaction.getProductPurchasesList());
+            return ResponseEntity.ok(transactionInfoDto);
+
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+    @GetMapping("/pay/{transactionId}")
+    public ResponseEntity<MessageResponse> makePayment(
+            @PathVariable(name = "transactionId") Long transactionId,
+            @RequestParam(name = "token") String token
+    ) {
+
+        try {
+            transactionService.makePayment(transactionId);
+
+            PaymentToken payment = paymentTokenService.findByToken(token);
+            paymentTokenService.deleteTokenById(payment.getPasswordResetTokenId());
+
+            return ResponseEntity.ok(new MessageResponse("Payed successfully !"));
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessage("Failed to update purchase status !");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(messageResponse);
+
+        }
+
+    }
 
 
 

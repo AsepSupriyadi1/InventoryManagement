@@ -16,7 +16,7 @@ import { Column } from "primereact/column";
 import { findAllBySupplierIdAPI, getAllProductAPI } from "../../api/product";
 import { addNewBillsAPI, confirmPurchasesAPI } from "../../api/purchases";
 import { getAllCustomersAPI } from "../../api/customer";
-import { addNewTransactionAPI } from "../../api/transaction";
+import { addNewTransactionAPI, saveTransactionAPI } from "../../api/transaction";
 
 const AddSales = () => {
   const { token, currentUser } = useContext(AuthContext);
@@ -282,16 +282,19 @@ const AddSales = () => {
   };
 
   const handleConfirmsBill = () => {
-    // confirmPurchasesAPI(token, transactionDetail).then((response) => {
-    //   successReturnConfAlert("Success", "Successfully Add new Bills")
-    //     .then(() => {
-    //       navigate("../all-purchases");
-    //     })
-    //     .catch((err) => {
-    //       alert("Error Occured !");
-    //       console.log(err);
-    //     });
-    // });
+    console.log("TRANSACTION DETAILS");
+    console.log(transactionDetail);
+
+    saveTransactionAPI(token, transactionDetail).then((response) => {
+      successReturnConfAlert("Success", "Successfully Add new Transactions")
+        .then(() => {
+          navigate("../all-transactions");
+        })
+        .catch((err) => {
+          alert("Error Occured !");
+          console.log(err);
+        });
+    });
   };
 
   return (

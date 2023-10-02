@@ -28,6 +28,8 @@ public class SecurityConfig  {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/transaction/payment-details").permitAll()
+                .requestMatchers("/api/v1/transaction/pay/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

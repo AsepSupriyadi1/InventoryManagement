@@ -138,11 +138,6 @@ public class PurchaseController {
             purchaseServices.goodsArrived(stockArrivedDto.getPurchaseId(), stockArrivedDto.getArrivedDate());
             return ResponseEntity.ok(new MessageResponse("Purchases arrived successfully"));
 
-
-//        catch (Exception e) {
-//            System.out.println(e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Purchases arrived successfully !"));
-//        }
     }
 
 

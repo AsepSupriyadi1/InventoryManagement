@@ -1,6 +1,7 @@
 package com.cpl.jumpstart.entity;
 
 import com.cpl.jumpstart.entity.constraint.PurchasesStatus;
+import com.cpl.jumpstart.entity.constraint.TransactionStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,11 +36,12 @@ public class CustomerTransaction {
     @Column(nullable = false)
     private String dateTime;
 
-    private Date receiveDate;
+    private String deliverStartDate;
+    private String receiveDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PurchasesStatus purchasesStatus;
+    private TransactionStatus transactionStatus;
 
 
     // -=-=-=-=-=- SUPPLIER DETAILS -=-=-=-=-=-=-=

@@ -35,14 +35,14 @@ const Header = () => {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link>
-                <Link className="link-light text-secondary" to="/dashboard">
-                  Dashboard
-                </Link>
-              </Nav.Link>
-
               {userCtx.currentUser.userRole === "SUPER_ADMIN" && (
                 <>
+                  <Nav.Link>
+                    <Link className="link-light text-secondary" to="/dashboard">
+                      Dashboard
+                    </Link>
+                  </Nav.Link>
+
                   <Nav.Link>
                     <Link to="/all-users" className="link-light text-secondary">
                       Users
