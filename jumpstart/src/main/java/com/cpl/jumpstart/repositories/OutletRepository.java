@@ -10,7 +10,14 @@ import java.util.Optional;
 
 public interface OutletRepository extends JpaRepository<Outlet, Long> {
 
+    @Query("SELECT COUNT(o) FROM Outlet o")
+    Long countAllOutlet();
 
+    @Query("SELECT SUM(o.totalRevenue) FROM Outlet o")
+    double getTotalRevenueAcrossOutlets();
+
+    @Query("SELECT SUM(o.totalExpenses) FROM Outlet o")
+    double getTotalExpensesAcrossOutlets();
 
     @Query(value = "SELECT MAX(o.outletId) FROM from Outlet o ")
     Long findMaxId();

@@ -13,6 +13,10 @@ import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+
+    @Query("SELECT COUNT(p) FROM Product p")
+    Long countAllProduct();
+
     @Query("SELECT u FROM Product u WHERE u.supplier.supplierId = :supplierId")
     List<Product> findAllByProductBySupplier(Long supplierId);
 

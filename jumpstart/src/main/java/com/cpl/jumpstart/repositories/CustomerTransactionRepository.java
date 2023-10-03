@@ -16,5 +16,8 @@ public interface CustomerTransactionRepository extends JpaRepository<CustomerTra
     @Query("SELECT c FROM CustomerTransaction c WHERE c.outlet.outletId = :outletId")
     List<CustomerTransaction> findAllTransactionByOutlet(Long outletId);
 
+    @Query("SELECT c FROM CustomerTransaction c WHERE c.transactionStatus = 'PENDING'")
+    List<CustomerTransaction> findPendingTransaction();
+
 
 }
