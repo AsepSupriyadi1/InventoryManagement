@@ -1,12 +1,7 @@
 package com.cpl.jumpstart.services;
-
-
 import com.cpl.jumpstart.entity.Customer;
 import com.cpl.jumpstart.entity.Outlet;
-import com.cpl.jumpstart.entity.Supplier;
 import com.cpl.jumpstart.repositories.CustomerRepository;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

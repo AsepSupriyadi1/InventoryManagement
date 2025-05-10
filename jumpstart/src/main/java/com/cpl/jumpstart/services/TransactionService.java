@@ -1,24 +1,30 @@
 package com.cpl.jumpstart.services;
 
-import com.cpl.jumpstart.dto.request.ProductPurchasesDto;
-import com.cpl.jumpstart.dto.request.PurchaseDto;
-import com.cpl.jumpstart.dto.request.TransactionDto;
-import com.cpl.jumpstart.dto.request.TransactionProductDto;
-import com.cpl.jumpstart.dto.response.BillsInfoDto;
-import com.cpl.jumpstart.dto.response.TransactionInfoDto;
-import com.cpl.jumpstart.entity.*;
-import com.cpl.jumpstart.entity.constraint.PurchasesStatus;
-import com.cpl.jumpstart.entity.constraint.TransactionStatus;
-import com.cpl.jumpstart.repositories.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.stereotype.Service;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cpl.jumpstart.dto.request.TransactionDto;
+import com.cpl.jumpstart.dto.request.TransactionProductDto;
+import com.cpl.jumpstart.dto.response.TransactionInfoDto;
+import com.cpl.jumpstart.entity.Customer;
+import com.cpl.jumpstart.entity.CustomerProductPurchases;
+import com.cpl.jumpstart.entity.CustomerTransaction;
+import com.cpl.jumpstart.entity.Outlet;
+import com.cpl.jumpstart.entity.PaymentToken;
+import com.cpl.jumpstart.entity.Product;
+import com.cpl.jumpstart.entity.StockProduct;
+import com.cpl.jumpstart.entity.UserApp;
+import com.cpl.jumpstart.entity.constraint.TransactionStatus;
+import com.cpl.jumpstart.repositories.CustomerProductPurchaseRepository;
+import com.cpl.jumpstart.repositories.CustomerTransactionRepository;
+import com.cpl.jumpstart.repositories.OutletRepository;
+import com.cpl.jumpstart.repositories.StockProductRepository;
 
 @Service
 public class TransactionService {
@@ -56,14 +62,16 @@ public class TransactionService {
     @Autowired
     private EmailSenderService emailSenderService;
 
-
     public TransactionInfoDto addNewPurchase(
-            TransactionDto transactionDto
-    ) {
+            TransactionDto transactionDto) {
 
         CustomerTransaction transaction = new CustomerTransaction();
         UserApp staff = userAppServices.getCurrentUser();
         Outlet outlet;
+
+        if (transactionDto.getProductDtoList().size() == 0) {
+            throw new RuntimeException("NO_ITEMS");
+        }
 
         try {
             outlet = outletService.findById(Long.parseLong(transactionDto.getOutletId()));
@@ -79,12 +87,6 @@ public class TransactionService {
             throw new RuntimeException("CONSTRAINT_NOT_FOUND");
         }
 
-
-        if(transactionDto.getProductDtoList().size() == 0){
-            throw new RuntimeException("NO_ITEMS");
-        }
-
-
         List<CustomerProductPurchases> purchasedProductList = new ArrayList<>();
         double totalAmount = 0;
 
@@ -94,7 +96,7 @@ public class TransactionService {
 
             try {
                 product = productServices.findProductById(requestProduct.getProductId());
-            } catch (Exception e){
+            } catch (Exception e) {
                 throw new RuntimeException("PRODUCT_NOT_FOUND");
             }
 
@@ -103,19 +105,19 @@ public class TransactionService {
             productPurchases.setProductId(product.getProductId().toString());
             productPurchases.setTransaction(transaction);
 
-            StockProduct productRules = stockProductService.findByProductAndOutlet(product.getProductId(), outlet.getOutletId());
+            StockProduct productRules = stockProductService.findByProductAndOutlet(product.getProductId(),
+                    outlet.getOutletId());
 
-            if(requestProduct.getQuantity() == 0){
+            if (requestProduct.getQuantity() == 0) {
                 throw new RuntimeException("ZERO_VALUE");
             }
 
-            if(productRules != null){
+            if (productRules != null) {
                 boolean isExceedQuantity = requestProduct.getQuantity() > productRules.getCurrentQuantity();
-                if(isExceedQuantity) {
+                if (isExceedQuantity) {
                     throw new RuntimeException("EXCEED_QUANTITY");
                 }
             }
-
 
             productPurchases.setQuantity(requestProduct.getQuantity());
             purchasedProductList.add(productPurchases);
@@ -128,7 +130,6 @@ public class TransactionService {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         transaction.setDateTime(dateFormat.format(currentDate));
 
-
         // USER DETAILS
         transaction.setStaffName(staff.getFullName());
         transaction.setStaffCode(staff.getStaffCode());
@@ -138,7 +139,7 @@ public class TransactionService {
         transaction.setTransactionStatus(TransactionStatus.PENDING);
 
         Long transactionCode = getLastSavedTransactionId();
-        if(transactionCode == null) {
+        if (transactionCode == null) {
             transactionCode = 1L;
         } else {
             transactionCode += 1;
@@ -149,11 +150,10 @@ public class TransactionService {
         return new TransactionInfoDto(transaction, purchasedProductList);
     }
 
-
-    public void saveTransaction(TransactionInfoDto transactionInfoDto){
+    public void saveTransaction(TransactionInfoDto transactionInfoDto) {
         transactionRepo.save(transactionInfoDto.getTransaction());
 
-        for(CustomerProductPurchases customerProductPurchases : transactionInfoDto.getPurchasesList()){
+        for (CustomerProductPurchases customerProductPurchases : transactionInfoDto.getPurchasesList()) {
             CustomerProductPurchases items = new CustomerProductPurchases();
             items.setQuantity(customerProductPurchases.getQuantity());
             items.setTransaction(transactionInfoDto.getTransaction());
@@ -163,11 +163,10 @@ public class TransactionService {
         }
     }
 
-    public void prosesTransaction(Long transactionId){
+    public void prosesTransaction(Long transactionId) {
         CustomerTransaction transaction = findTransactionById(transactionId);
         transaction.setTransactionStatus(TransactionStatus.PROCESS);
         transactionRepo.save(transaction);
-
 
         String toEmail = "asepsupyad789@gmail.com";
         String subjectEmail = "Delivery Product - Jumpstart";
@@ -175,14 +174,13 @@ public class TransactionService {
         emailSenderService.sendSimpleEmail(toEmail, bodyEmail, subjectEmail);
     }
 
-    public void deliverTransaction(Long transactionId, Date deliveryDate){
+    public void deliverTransaction(Long transactionId, Date deliveryDate) {
         CustomerTransaction transaction = findTransactionById(transactionId);
         transaction.setTransactionStatus(TransactionStatus.DELIVER);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         transaction.setDeliverStartDate(format.format(deliveryDate));
         transactionRepo.save(transaction);
-
 
         PaymentToken paymentToken = new PaymentToken();
         paymentToken.setTransactionId(transaction.getTransactionId());
@@ -194,14 +192,13 @@ public class TransactionService {
 
         String toEmail = "asepsupyad789@gmail.com";
         String subjectEmail = "Delivery Product - Jumpstart";
-        String bodyEmail = "Your transaction is on delivery, If your product has arrived, please make a payment to complete the processes by going to this URL below \n " + fullUrl;
+        String bodyEmail = "Your transaction is on delivery, If your product has arrived, please make a payment to complete the processes by going to this URL below \n "
+                + fullUrl;
 
         emailSenderService.sendSimpleEmail(toEmail, bodyEmail, subjectEmail);
     }
 
-
-
-    public void makePayment(Long transactionId){
+    public void makePayment(Long transactionId) {
         CustomerTransaction transaction = findTransactionById(transactionId);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         transaction.setReceiveDate(format.format(new Date()));
@@ -215,28 +212,21 @@ public class TransactionService {
         transactionRepo.save(transaction);
     }
 
-
-    public CustomerTransaction findTransactionById(Long transactionId){
+    public CustomerTransaction findTransactionById(Long transactionId) {
         return transactionRepo.findById(transactionId).orElseThrow(
-                () -> new RuntimeException(String.format("Transaction not found for id %s", transactionId))
-        );
+                () -> new RuntimeException(String.format("Transaction not found for id %s", transactionId)));
     }
 
-
-    public List<CustomerTransaction> findALlTransactionByOutlet(Long outletId){
+    public List<CustomerTransaction> findALlTransactionByOutlet(Long outletId) {
         return transactionRepo.findAllTransactionByOutlet(outletId);
     }
 
-
-    public List<CustomerProductPurchases> findAllProductPurchasesTransaction(Long transactionId){
+    public List<CustomerProductPurchases> findAllProductPurchasesTransaction(Long transactionId) {
         return transactionProductRepo.findAllByProductByTransactionId(transactionId);
     }
-
 
     public Long getLastSavedTransactionId() {
         return transactionRepo.findMaxId();
     }
-
-
 
 }

@@ -1,13 +1,10 @@
 package com.cpl.jumpstart.services;
 
-
-import com.cpl.jumpstart.entity.PaymentToken;
-import com.cpl.jumpstart.repositories.PaymentTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import com.cpl.jumpstart.entity.PaymentToken;
+import com.cpl.jumpstart.repositories.PaymentTokenRepository;
 
 @Service
 public class PaymentTokenService {

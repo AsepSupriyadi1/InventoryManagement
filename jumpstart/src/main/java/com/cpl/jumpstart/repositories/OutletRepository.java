@@ -13,17 +13,16 @@ public interface OutletRepository extends JpaRepository<Outlet, Long> {
     @Query("SELECT COUNT(o) FROM Outlet o")
     Long countAllOutlet();
 
-    @Query("SELECT SUM(o.totalRevenue) FROM Outlet o")
+    @Query("SELECT COALESCE(SUM(o.totalRevenue), 0) FROM Outlet o")
     double getTotalRevenueAcrossOutlets();
 
-    @Query("SELECT SUM(o.totalExpenses) FROM Outlet o")
+    @Query("SELECT COALESCE(SUM(o.totalExpenses), 0) FROM Outlet o")
     double getTotalExpensesAcrossOutlets();
 
     @Query(value = "SELECT MAX(o.outletId) FROM from Outlet o ")
     Long findMaxId();
 
     Optional<Outlet> findByUserApp(UserApp userApp);
-
 
     @Query("SELECT u FROM Outlet u WHERE u.outletName = :outletName")
     Outlet findByOutletName(String outletName);

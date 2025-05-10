@@ -27,7 +27,7 @@ export const loginAPI = async (user, userCtx, navigate, setError, setModalShow) 
           redirectUrl = "/dashboard";
           break;
         case "STORE_ADMIN":
-          redirectUrl = "/dashboard";
+          redirectUrl = "/all-stocks";
           break;
 
         default:

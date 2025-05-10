@@ -22,12 +22,15 @@ public class SecurityConfig  {
     private final LogoutHandler logoutHandler;
     private final AuthenticationProvider authenticationProvider;
 
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/user/**").permitAll()
+                .requestMatchers("/api/v1/outlet/**").permitAll()
                 .requestMatchers("/api/v1/transaction/payment-details").permitAll()
                 .requestMatchers("/api/v1/transaction/pay/**").permitAll()
                 .anyRequest().authenticated()

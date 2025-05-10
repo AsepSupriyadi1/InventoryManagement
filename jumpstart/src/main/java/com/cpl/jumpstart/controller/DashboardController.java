@@ -54,8 +54,8 @@ public class DashboardController {
 
     @GetMapping("/dollars")
     public ResponseEntity<Map<String, Double>> getTotalRevenue(){
-       double totalRevenue = outletRepository.getTotalRevenueAcrossOutlets();
-       double totalExpenses = outletRepository.getTotalExpensesAcrossOutlets();
+       Double totalRevenue = outletRepository.getTotalRevenueAcrossOutlets();
+       Double totalExpenses = outletRepository.getTotalExpensesAcrossOutlets();
 
         Map<String, Double> listDashboardInfo = new HashMap<>();
 

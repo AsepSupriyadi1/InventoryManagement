@@ -1,32 +1,20 @@
 package com.cpl.jumpstart.services;
 
-import com.cpl.jumpstart.Exception.EmailAlreadyExistException;
-import com.cpl.jumpstart.Exception.OutletNotActiveException;
-import com.cpl.jumpstart.Exception.UserNotActiveException;
-import com.cpl.jumpstart.entity.Outlet;
-import com.cpl.jumpstart.entity.Token;
-import com.cpl.jumpstart.entity.UserApp;
-import com.cpl.jumpstart.entity.constraint.UserAppRole;
-import com.cpl.jumpstart.repositories.OutletRepository;
-import com.cpl.jumpstart.repositories.TokenRepository;
-import com.cpl.jumpstart.repositories.UserAppRepository;
-import com.cpl.jumpstart.utils.CountryConfig;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
+import com.cpl.jumpstart.Exception.EmailAlreadyExistException;
+import com.cpl.jumpstart.Exception.OutletNotActiveException;
+import com.cpl.jumpstart.Exception.UserNotActiveException;
+import com.cpl.jumpstart.entity.UserApp;
+import com.cpl.jumpstart.entity.constraint.UserAppRole;
+import com.cpl.jumpstart.repositories.UserAppRepository;
 
 @Service
 public class UserAppServices implements UserDetailsService {
@@ -36,10 +24,6 @@ public class UserAppServices implements UserDetailsService {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-
-    @Autowired
-    private OutletRepository outletRepo;
-
 
 
     @Override

@@ -1,16 +1,15 @@
 package com.cpl.jumpstart.services;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.cpl.jumpstart.entity.Outlet;
 import com.cpl.jumpstart.entity.Product;
 import com.cpl.jumpstart.entity.StockProduct;
-import com.cpl.jumpstart.model.StocksModel;
 import com.cpl.jumpstart.repositories.StockProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StockProductService {
@@ -68,6 +67,9 @@ public class StockProductService {
 
     public void deleteStockById(Long stockId){
         StockProduct stockProduct = findById(stockId);
+        if(stockProduct.getCurrentQuantity() > 0){
+            throw new RuntimeException("STOCK");
+        }
         stockProductRepo.deleteById(stockId);
     }
 

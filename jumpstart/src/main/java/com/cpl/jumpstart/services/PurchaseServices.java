@@ -1,6 +1,5 @@
 package com.cpl.jumpstart.services;
 
-
 import com.cpl.jumpstart.dto.request.ProductPurchasesDto;
 import com.cpl.jumpstart.dto.request.PurchaseDto;
 import com.cpl.jumpstart.dto.response.BillsInfoDto;
@@ -18,7 +17,6 @@ import java.util.*;
 
 @Service
 public class PurchaseServices {
-
 
     @Autowired
     public PurchasesRepository purchasesRepo;
@@ -46,14 +44,16 @@ public class PurchaseServices {
     @Autowired
     private UserAppServices userAppServices;
 
-
     public BillsInfoDto addNewPurchase(
-            PurchaseDto purchaseDto
-    ) {
+            PurchaseDto purchaseDto) {
 
         Purchases purchases = new Purchases();
         UserApp staff = userAppServices.getCurrentUser();
         Outlet outlet;
+
+        if (purchaseDto.getListProduct().size() == 0) {
+            throw new RuntimeException("NO_ITEMS");
+        }
 
         try {
             outlet = outletService.findById(Long.parseLong(purchaseDto.getOutletId()));
@@ -68,15 +68,8 @@ public class PurchaseServices {
             throw new RuntimeException("CONSTRAINT_NOT_FOUND");
         }
 
-
         List<ProductPurchases> purchasedProductList = new ArrayList<>();
         double totalAmount = 0;
-
-
-        if(purchaseDto.getListProduct().size() == 0){
-            throw new RuntimeException("NO_ITEMS");
-        }
-
 
         for (ProductPurchasesDto requestProduct : purchaseDto.getListProduct()) {
 
@@ -84,7 +77,7 @@ public class PurchaseServices {
 
             try {
                 product = productServices.findProductById(requestProduct.getProductId());
-            } catch (Exception e){
+            } catch (Exception e) {
                 throw new RuntimeException("PRODUCT_NOT_FOUND");
             }
 
@@ -93,20 +86,19 @@ public class PurchaseServices {
             productPurchases.setProductId(product.getProductId().toString());
             productPurchases.setPurchases(purchases);
 
-            StockProduct productRules = stockProductService.findByProductAndOutlet(product.getProductId(), outlet.getOutletId());
+            StockProduct productRules = stockProductService.findByProductAndOutlet(product.getProductId(),
+                    outlet.getOutletId());
 
-
-            if(requestProduct.getQuantity() == 0){
+            if (requestProduct.getQuantity() == 0) {
                 throw new RuntimeException("ZERO_VALUE");
             }
 
-
-            if(productRules != null){
+            if (productRules != null) {
 
                 boolean isMinimumStockLevel = requestProduct.getQuantity() >= productRules.getMinimumStockLevel();
                 boolean isGreaterThanMaximum = requestProduct.getQuantity() > productRules.getMaximumStockLevel();
-                boolean isMax = requestProduct.getQuantity() + productRules.getCurrentQuantity() > productRules.getMaximumStockLevel();
-
+                boolean isMax = requestProduct.getQuantity() + productRules.getCurrentQuantity() > productRules
+                        .getMaximumStockLevel();
 
                 if (!isMinimumStockLevel) {
                     throw new RuntimeException("MINIMUM_ERROR");
@@ -131,7 +123,6 @@ public class PurchaseServices {
 
         }
 
-
         // USER DETAILS
         purchases.setStaffName(staff.getFullName());
         purchases.setStaffCode(staff.getStaffCode());
@@ -139,29 +130,26 @@ public class PurchaseServices {
         // PURCHASES DETAIL
         purchases.setTotalAmount(totalAmount);
 
-
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         purchases.setDateTime(format.format(new Date()));
 
         purchases.setPurchasesStatus(PurchasesStatus.PENDING);
 
         Long puchaseCode = getLastSavedPurchasesId();
-        if(puchaseCode == null) {
+        if (puchaseCode == null) {
             puchaseCode = 1L;
         } else {
             puchaseCode += 1;
         }
         purchases.setPurchaseCode("BILL-JP-" + puchaseCode);
 
-       return new BillsInfoDto(purchases, purchasedProductList);
+        return new BillsInfoDto(purchases, purchasedProductList);
     }
 
-
-
-    public void saveBills(BillsInfoDto billsInfoDto){
+    public void saveBills(BillsInfoDto billsInfoDto) {
         purchasesRepo.save(billsInfoDto.getPurchases());
 
-        for(ProductPurchases productPurchases : billsInfoDto.getPurchasesList()){
+        for (ProductPurchases productPurchases : billsInfoDto.getPurchasesList()) {
             ProductPurchases items = new ProductPurchases();
             items.setQuantity(productPurchases.getQuantity());
             items.setPurchases(billsInfoDto.getPurchases());
@@ -172,7 +160,7 @@ public class PurchaseServices {
 
     }
 
-    public void approveBills(String purchaseId){
+    public void approveBills(String purchaseId) {
         UserApp userApp = userAppServices.getCurrentUser();
         Purchases purchases = findPurchaseById(Long.parseLong(purchaseId));
         purchases.setPurchasesStatus(PurchasesStatus.APPROVED);
@@ -180,16 +168,15 @@ public class PurchaseServices {
         purchasesRepo.save(purchases);
     }
 
-    public void goodsArrived(String purchaseId, Date dateArrived){
+    public void goodsArrived(String purchaseId, Date dateArrived) {
         Purchases purchases = findPurchaseById(Long.parseLong(purchaseId));
         Outlet outlet = purchases.getOutlet();
 
-
-        for(ProductPurchases productPurchases : purchases.getProductPurchasesList()){
+        for (ProductPurchases productPurchases : purchases.getProductPurchasesList()) {
             Product product = productServices.findProductById(Long.parseLong(productPurchases.getProductId()));
             Optional<StockProduct> stockProduct = stockProductRepo.findByOutletAndProduct(outlet, product);
 
-            if(stockProduct.isEmpty()){
+            if (stockProduct.isEmpty()) {
                 StockProduct newStock = new StockProduct();
                 newStock.setCurrentQuantity(productPurchases.getQuantity());
                 newStock.setProduct(product);
@@ -209,17 +196,14 @@ public class PurchaseServices {
         purchasesRepo.save(purchases);
     }
 
-
-    public Purchases findPurchaseById(Long purchaseId){
+    public Purchases findPurchaseById(Long purchaseId) {
 
         return purchasesRepo.findById(purchaseId).orElseThrow(
-                () -> new RuntimeException(String.format("Purchase not found for id %s", purchaseId))
-        );
+                () -> new RuntimeException(String.format("Purchase not found for id %s", purchaseId)));
 
     }
 
-
-    public void makePayment(Long purchaseId){
+    public void makePayment(Long purchaseId) {
         Purchases purchases = findPurchaseById(purchaseId);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         purchases.setPayedAt(format.format(new Date()));
@@ -236,7 +220,5 @@ public class PurchaseServices {
     public Long getLastSavedPurchasesId() {
         return purchasesRepo.findMaxId();
     }
-
-
 
 }

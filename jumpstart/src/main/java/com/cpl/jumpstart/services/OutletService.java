@@ -1,12 +1,11 @@
 package com.cpl.jumpstart.services;
 
-import com.cpl.jumpstart.entity.Outlet;
-import com.cpl.jumpstart.entity.UserApp;
-import com.cpl.jumpstart.repositories.CustomerRepository;
-import com.cpl.jumpstart.repositories.OutletRepository;
-import com.cpl.jumpstart.utils.CountryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.cpl.jumpstart.entity.Outlet;
+import com.cpl.jumpstart.entity.UserApp;
+import com.cpl.jumpstart.repositories.OutletRepository;
 
 @Service
 public class OutletService {
@@ -14,8 +13,6 @@ public class OutletService {
     @Autowired
     private OutletRepository outletRepo;
 
-    @Autowired
-    private CustomerRepository customerRepo;
     @Autowired
     private UserAppServices userAppServices;
 
